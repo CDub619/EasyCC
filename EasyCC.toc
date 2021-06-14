@@ -1,0 +1,9 @@
+## Title: EasyCC (TBC)
+## Interface: 90000
+## Notes:
+## Author: Bambi
+## Version: 9.0
+## SavedVariables: EasyCCDB
+
+EasyCC.lua
+Spells.lua
