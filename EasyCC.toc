@@ -1,8 +1,7 @@
 ## Title: EasyCC (TBC)
-## Interface: 90000
 ## Notes:
 ## Author: Bambi
-## Version: 9.0
+## Version: TBC
 ## SavedVariables: EasyCCDB
 
 EasyCC.lua
