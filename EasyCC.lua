@@ -14,18 +14,24 @@ local GetAlpha = GetAlpha
 local tblinsert = table.insert
 local strfind = string.find
 local strmatch = string.match
+local strformat = string.format
+local strlen = string.len
 local tblinsert = table.insert
 local tblremove= table.remove
 local mathfloor = math.floor
+local mathabs = math.abs
+local bit_band = bit.band
+local tblsort = table.sort
+local Ctimer = C_Timer.After
+local substring = string.sub
+local su = string.sub
 local CLocData = C_LossOfControl.GetActiveLossOfControlData
 local f, x, y
 local _G = _G
-local TimeSinceLastUpdate = 0
 local EasyCCDB
 local hieght = 48
 local width = 48
-local time = 2 -- Fade Timer
-local spellIds = {}
+local fadeTime = 2-- Fade Timer
 
 local spellsTable = {
 {"Hunter", --TAB
@@ -1748,6 +1754,9 @@ local spellsTable = {
   	{12461  , "CC"},				-- Backhand
   	{27565  , "CC"},				-- Banish
   	{16350  , "CC"},				-- Freeze
+
+  	--{139  , "CC"},				-- Renew
+    --{15473, "Silence"}
   },
   {"Discovered Spells"
   },
@@ -1755,12 +1764,21 @@ local spellsTable = {
 
 local tabs = {
   "CC",
-	"Interrupt",
 	"Silence",
+	"Interrupt",
 	"Root",
 	"Disarm",
-  "Other"
+  "Other",
+  "Warning",
 	}
+
+local spellIds = { }
+local string = { }
+local customString = {
+  [139] = "FUCK YOU",
+  [15473] ="HIEHE",
+ }
+
 
 L.spellsTable = spellsTable
 
@@ -1770,19 +1788,36 @@ for i = 1, #tabs do
 end
 
 local DBdefaults = {
+ version = 2.04,
  Scale = 1,
  xOfs = 0,
  yOfs = -30,
- version = 2.01,
  LossOfControl = true,
- LossOfControlInterrupt = 2,
- LossOfControlFull = 2,
- LossOfControlSilence = 2,
- LossOfControlDisarm = 2,
- LossOfControlRoot = 2,
  DiscoveredSpells = { },
  spellEnabled = { },
  customSpellIds = { },
+ LossOfControlFull = 2,
+ LossOfControlInterrupt = 2,
+ LossOfControlSilence = 2,
+ LossOfControlDisarm = 2,
+ LossOfControlRoot = 2,
+ priority = {		-- higher numbers have more priority; 0 = disabled
+   CC = 100,
+   Interrupt = 80,
+   Silence = 60,
+   Root = 40,
+   Disarm = 20,
+   Other = 10,
+   Warning = 0,
+  },
+durationTime = {
+  CC = 2,
+  Interrupt = 2,
+  Silence = 2,
+  Root = 2,
+  Other = 2,
+  Warning = 0,
+  },
 }
 
 local EasyCC = CreateFrame('Frame')
@@ -1793,55 +1828,132 @@ EasyCC:SetScript("OnEvent", function(frame, event, ...)
       local Index = ...
       local data = C_LossOfControl.GetActiveLossOfControlData(Index)
     	EasyCC:LossOfControl(data, Index)
-    elseif event == "LOSS_OF_CONTROL_UPDATE" then
+  elseif event == "LOSS_OF_CONTROL_UPDATE" then
       local data = C_LossOfControl.GetActiveLossOfControlData(1)
     	EasyCC:LossOfControl(data)
+  elseif event == "UNIT_AURA" and ... == "player" then
+      EasyCC:PlayerAura(...)
 	elseif event == "PLAYER_ENTERING_WORLD" then
-		EasyCC:OnLoad()
+		  EasyCC:OnLoad()
 	elseif event == "ADDON_LOADED" and ... == addonName then
-		EasyCC:ADDON_LOADED(addonName)
+		  EasyCC:ADDON_LOADED(...)
 	end
 end)
 
  -- this is a custom function
 ---EasyCC:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
+EasyCC:RegisterUnitEvent('UNIT_AURA', "player")
 EasyCC:RegisterEvent("PLAYER_ENTERING_WORLD")
 EasyCC:RegisterEvent("ADDON_LOADED")
 EasyCC:RegisterEvent("LOSS_OF_CONTROL_ADDED")
 EasyCC:RegisterEvent("LOSS_OF_CONTROL_UPDATE")
 
+function EasyCC:PlayerAura(unit)
 
-function EasyCC:cleu()
-	local _, event, _, sourceGUID, sourceName, _, _, destGUID, destName, _, _, spellId, spellName, _, _, _, spellSchool = CombatLogGetCurrentEventInfo()
-	if (event == "SPELL_INTERRUPT") then
-		print(sourceName.." kicked "..destName.." w/ "..spellName.. " on "..spellSchool.." LCI")
-		if destGUID == UnitGUID("player") then
-			_, _, icon = GetSpellInfo(spellId)
-			duration = spells[spellId]
-			if self.test then EasyCC:toggletest() end
-			local string = EasyCC:stringcleu(spellSchool)
-			EasyCC:Display(icon, duration, string)
+  local priority = EasyCCDB.priority
+  local enabled = EasyCCDB.spellEnabled
+  local durationTime = EasyCCDB.durationTime
+  local maxPriority = 1
+  local maxExpirationTime = 0
+  local Icon, Duration, DurationTime, Text
+
+  for i = 1, 40 do
+    local name, icon, count, _, duration, expirationTime, source, _, _, spellId = UnitAura(unit, i, "HARMFUL")
+    if not spellId then break end
+
+    if duration == 0 and expirationTime == 0 then
+    	expirationTime = GetTime() + 1 -- normal expirationTime = 0
+    end
+
+    local spellCategory = spellIds[spellId] or spellIds[name]
+    local Priority = priority[spellCategory]
+    local durationShow = durationTime[spellCategory]
+    if (enabled[spellId] or enabled[name]) and durationShow and durationShow > 0 then
+      if Priority == maxPriority and expirationTime > maxExpirationTime then
+  			maxExpirationTime = expirationTime
+  			Duration = duration
+        DurationTime = durationShow
+  			Icon = icon
+        Text = string[spellId] or string[name] or string[spellCategory]
+  		elseif Priority > maxPriority then
+  			maxPriority = Priority
+  			maxExpirationTime = expirationTime
+  			Duration = duration
+        DurationTime = durationShow
+  			Icon = icon
+        Text = customString[spellId] or string[spellId] or string[name]
+  		end
+    end
+  end
+
+  for i = 1, 40 do
+    local name, icon, count, _, duration, expirationTime, source, _, _, spellId = UnitAura(unit, i, "HELPFULL")
+    if not spellId then break end
+
+    if duration == 0 and expirationTime == 0 then
+      expirationTime = GetTime() + 1 -- normal expirationTime = 0
+    end
+
+    local spellCategory = spellIds[spellId] or spellIds[name]
+    local Priority = priority[spellCategory]
+    local durationShow = durationTime[spellCategory]
+    if (enabled[spellId] or enabled[name]) and durationShow and durationShow > 0 then
+      if Priority == maxPriority and expirationTime > maxExpirationTime then
+        maxExpirationTime = expirationTime
+        Duration = duration
+        DurationTime = durationShow
+        Icon = icon
+        Text = string[spellId] or string[name] or string[spellCategory]
+      elseif Priority > maxPriority then
+        maxPriority = Priority
+        maxExpirationTime = expirationTime
+        Duration = duration
+        DurationTime = durationShow
+        Icon = icon
+        Name = name
+        Text = customString[spellId] or string[spellId] or string[name]
+      end
+    end
+  end
+
+  if f.InterruptspellID and enabled[f.InterruptspellID] then
+    local spellCategory = spellIds[f.InterruptspellID]
+    local Priority = priority[spellCategory]
+    local expirationTime = f.InterruptstartTime + f.Interruptduration
+    local durationShow = durationTime[spellCategory]
+    if Priority == maxPriority and expirationTime > maxExpirationTime and durationShow and durationShow > 0 then
+      maxExpirationTime = expirationTime
+      Duration = f.Interruptduration
+      DurationTime = durationShow
+      Icon = f.InterrupticonTexture
+      Text = f.Interrupttext
+    elseif Priority > maxPriority and durationShow > 0 then
+      maxPriority = Priority
+      maxExpirationTime = expirationTime
+      Duration = f.Interruptduration
+      DurationTime = durationShow
+      Icon = f.InterrupticonTexture
+      Text = f.Interrupttext
+    end
+  end
+
+  if DurationTime == 2 then DurationTime = true elseif DurationTime == 1 then DurationTime = false end
+
+	if (maxExpirationTime == 0) then -- no (de)buffs found
+    self.maxExpirationTime = 0
+    if f:IsShown() then
+			f:Hide()
 		end
-	end
-	if (event == "SPELL_CAST_SUCCESS") and not (event == "SPELL_INTERRUPT") then --channleed kicks on player
-		if spells[spellId] then
-			if (destGUID == UnitGUID("player")) and (select(7, UnitChannelInfo("player")) == false) then
-			 print(sourceName.." kicked "..destName.." w/ "..spellName.. " on spellschool: "..spellSchool.." LCI")
-			 local duration = spells[spellId]
-				if (duration ~= nil) then
-					_, _, icon = GetSpellInfo(spellId)
-					duration = spells[spellId]
-					if self.test then EasyCC:toggletest() end
-					local string = EasyCC:stringcleu(spellSchool)
-					EasyCC:Display(icon, duration, string)
-				end
-			end
-		end
-	end
+  elseif maxExpirationTime ~= self.maxExpirationTime then -- new debuff found
+    self.maxExpirationTime = maxExpirationTime
+    local StartTime = maxExpirationTime - Duration
+    EasyCC:Display(Icon, StartTime, Duration, Text, DurationTime)
+  end
 end
 
 function EasyCC:LossOfControl(data, Index)
- 	if not data then f:Hide(); self.priority = nil; self.startTime = nil; return end
+ 	if not data then f:Hide(); f.priority = nil; f.startTime = nil; return end
+
   local locType = data.locType;
  	local spellID = data.spellID;
  	local text = data.displayText;
@@ -1852,40 +1964,54 @@ function EasyCC:LossOfControl(data, Index)
  	local lockoutSchool = data.lockoutSchool;
  	local priority = data.priority;
  	local displayType = data.displayType;
+
+  string[spellID] = customString[spellID] or text
+
 	if not spellIds[spellID] then EasyCC:NewSpell(spellID, locType, lockoutSchool, duration) end --Need to filter out deleted spells fron DB or will keep finding same spell thats been deleted
-	if EasyCCDB.LossOfControl and EasyCCDB.spellEnabled[spellID] and ((not self.priority or (priority > self.priority or priority == self.priority )) or not f:IsShown()) and (not self.startTime or startTime ~= self.startTime) then
+	if EasyCCDB.LossOfControl and EasyCCDB.spellEnabled[spellID] and ((not f.priority or (priority > f.priority or priority == f.priority )) or not f:IsShown()) and (not f.startTime or startTime ~= f.startTime) then
   	if displayType ~= DISPLAY_TYPE_NONE then
-      self.priority = priority; self.startTime = startTime; self.start = startTime; self.spellID = spellID
-			if (locType == "STUN_MECHANIC") or (locType =="PACIFY") or (locType =="STUN") or (locType =="FEAR") or (locType =="CHARM") or (locType =="CONFUSE") or (locType =="POSSESS") or (locType =="FEAR_MECHANIC") or (locType =="FEAR") then
+      if (locType == "STUN_MECHANIC") or (locType =="PACIFY") or (locType =="STUN") or (locType =="FEAR") or (locType =="CHARM") or (locType =="CONFUSE") or (locType =="POSSESS") or (locType =="FEAR_MECHANIC") then
 				if EasyCCDB.LossOfControlFull == "2" or EasyCCDB.LossOfControlFull == 2 then
-					EasyCC:Display(iconTexture, duration, text, true)
+					EasyCC:Display(iconTexture, startTime, duration, text, true)
 				elseif EasyCCDB.LossOfControlFull == "1" or EasyCCDB.LossOfControlFull == 1 then
-					EasyCC:Display(iconTexture, duration, text, false)
+					EasyCC:Display(iconTexture, startTime, duration, text, false)
 				end
 			elseif locType == "DISARM" then
 				if EasyCCDB.LossOfControlDisarm  == "2" or EasyCCDB.LossOfControlDisarm == 2 then
-					EasyCC:Display(iconTexture, duration, text, true)
+					EasyCC:Display(iconTexture, startTime, duration, text, true)
 				elseif EasyCCDB.LossOfControlDisarm  == "1" or EasyCCDB.LossOfControlDisarm  == 1 then
-					EasyCC:Display(iconTexture, duration, text, false)
+					EasyCC:Display(iconTexture, startTime, duration, text, false)
 				end
 			elseif (locType == "PACIFYSILENCE") or (locType =="SILENCE") then
 				if EasyCCDB.LossOfControlSilence  == "2" or EasyCCDB.LossOfControlSilence  == 2 then
-					EasyCC:Display(iconTexture, duration, text, true)
+					EasyCC:Display(iconTexture, startTime, duration, text, true)
 				elseif EasyCCDB.LossOfControlSilence  == "1" or EasyCCDB.LossOfControlSilence  == 1 then
-					EasyCC:Display(iconTexture, duration, text, false)
+					EasyCC:Display(iconTexture, startTime, duration, text, false)
 				end
 			elseif locType == "ROOT" then
 				if EasyCCDB.LossOfControlRoot == "2" or EasyCCDB.LossOfControlRoot == 2 then
-					EasyCC:Display(iconTexture, duration, text, true)
+					EasyCC:Display(iconTexture, startTime, duration, text, true)
 				elseif EasyCCDB.LossOfControlRoot == "1" or EasyCCDB.LossOfControlRoot == 1 then
-					EasyCC:Display(iconTexture, duration, text, false)
+					EasyCC:Display(iconTexture, startTime, duration, text, false)
 				end
 			elseif locType == "SCHOOL_INTERRUPT" then
-				text = string.format("%s Locked", GetSchoolString(lockoutSchool));
+
+        text = strformat("%s Locked", GetSchoolString(lockoutSchool));
+
+        if spellID then f.InterruptspellID = spellID else f.InterruptspellID = nil end
+        if iconTexture then f.InterrupticonTexture = iconTexture else f.InterrupticonTexture = nil end
+        if startTime then f.InterruptstartTime = startTime; else f.InterruptstartTime = nil end
+        if text then f.Interrupttext = text else f.Interrupttext = nil end
+        if duration then f.Interruptduration = duration else f.Interruptduration = nil end
+
+        Ctimer(duration, function() f.InterruptspellID = nil; f.InterrupticonTexture = nil; f.InterruptstartTime = nil; f.Interruptduration = nil; f.Interrupttext = nil end)
+
 				if EasyCCDB.LossOfControlInterrupt == "2" or EasyCCDB.LossOfControlInterrupt == 2 then
-					EasyCC:Display(iconTexture, duration, text, true)
+					EasyCC:Display(iconTexture, startTime, duration, text, true)
+          --EasyCC:PlayerAura("player")
 				elseif EasyCCDB.LossOfControlInterrupt == "1" or EasyCCDB.LossOfControlInterrupt == 1 then
-					EasyCC:Display(iconTexture, duration, text, false)
+					EasyCC:Display(iconTexture, startTime, duration, text, false)
+          --EasyCC:PlayerAura("player")
 				end
 			else
 			end
@@ -1916,9 +2042,8 @@ function EasyCC:NewSpell(spellID, locType, lockoutSchool, duration)
 end
 
 
-function EasyCC:Display(icon, duration, string, full)
-	if self.test then time = duration; self.start = GetTime() elseif full then time = duration else time = 2 end
-	if f and f:IsShown() then f:Hide(); self.priority = nil; self.startTime = nil end
+function EasyCC:Display(icon, startTime, duration, string, durationDisplay)
+	if self.test then f.displayTime = duration; f.startTime = GetTime() elseif durationDisplay then f.displayTime = duration; f.startTime = startTime else f.displayTime = fadeTime; f.startTime = startTime end
 	if string then
 		f.Ltext:SetText(string)
 	end
@@ -1928,14 +2053,17 @@ function EasyCC:Display(icon, duration, string, full)
 		f.Icon.texture:SetTexture(132219)
 	end
 	if duration and duration ~= 0 then --duration control here
-		f.Icon.cooldown:SetCooldown(GetTime(), duration)
+    f.TimeSinceLastUpdate = 0
+		f.Icon.cooldown:SetCooldown(startTime, duration)
 		f.Icon.cooldown:SetSwipeColor(0, 0, 0, 1)
 		f.Ltext:ClearAllPoints()
 		f.timer:ClearAllPoints()
 		f.Ltext:SetPoint("LEFT", f.Icon, "RIGHT", 5, 9)
 	  f.timer:SetPoint("LEFT", f.Icon, "RIGHT", 5, -14)
 		f.timer:Show()
-	else
+	else -- no druation
+    f.TimeSinceLastUpdate = 0
+    f.displayTime = GetTime() + 1
 		f.Icon.cooldown:SetCooldown(GetTime(), 0)
 		f.Icon.cooldown:SetSwipeColor(0, 0, 0, 0)
 		f.Ltext:ClearAllPoints()
@@ -1950,14 +2078,14 @@ function EasyCC:Display(icon, duration, string, full)
 		y = EasyCCDB.yOfs
 		x = EasyCCDB.xOfs
 	end
-	f.barB.texture:SetWidth(f.Icon:GetWidth() + (string.len(f.Ltext:GetText()) * 21))
-	f.barU.texture:SetWidth(f.Icon:GetWidth() + (string.len(f.Ltext:GetText()) * 21))
+	f.barB.texture:SetWidth(f.Icon:GetWidth() + (strlen(f.Ltext:GetText()) * 21))
+	f.barU.texture:SetWidth(f.Icon:GetWidth() + (strlen(f.Ltext:GetText()) * 21))
 	f.barU.texture:ClearAllPoints()
 	f.barB.texture:ClearAllPoints()
 	f.barU.texture:SetPoint("BOTTOM", f, "TOP", 0, 4)
 	f.barB.texture:SetPoint("TOP", f, "BOTTOM", 0, -4)
-	f:SetWidth(f.Icon:GetWidth() + (string.len(f.Ltext:GetText()) * 16))
-  f.backgroundTexture:SetWidth(f.Icon:GetWidth() + (string.len(f.Ltext:GetText()) * 16))
+	f:SetWidth(f.Icon:GetWidth() + (strlen(f.Ltext:GetText()) * 16))
+  f.backgroundTexture:SetWidth(f.Icon:GetWidth() + (strlen(f.Ltext:GetText()) * 16))
 	f:ClearAllPoints()
 	f:SetPoint("CENTER", UIParent, "CENTER", x, y)
 	f:Show()
@@ -1966,24 +2094,27 @@ end
 function EasyCC:OnLoad()
 	if not f then --create the frame
 		f = CreateFrame("Frame")
-		--f:SetIgnoreParentScale(true)
 		f:SetScale(EasyCCDB.Scale)
 		f:SetParent(UIParent)
 		f:SetFrameStrata("HIGH")
 		f:SetHeight(hieght)
+
     f.backgroundTexture = f:CreateTexture(nil, "BACKGROUND")
     f.backgroundTexture:SetTexture("Interface\\Cooldown\\LoC-ShadowBG")
     f.backgroundTexture:SetPoint("CENTER", f, "CENTER", 0, 0)
     f.backgroundTexture:SetHeight(hieght + 8)
     f.backgroundTexture:SetVertexColor(1, 1, 1, 0.5)
+
 		f.Icon = CreateFrame("Frame", "f.Icon")
 		f.Icon:SetHeight(hieght)
 		f.Icon:SetWidth(width)
 		f.Icon:SetParent(f)
 		f.Icon:ClearAllPoints()
 		f.Icon:SetPoint("LEFT", f, "LEFT", 0, 0)
+
 		f.Icon.texture = f.Icon:CreateTexture(f.Icon, 'BACKGROUND')
 		f.Icon.texture:SetAllPoints(f.Icon)
+
 		f.Icon.cooldown = CreateFrame("Cooldown", "BambiUIInterrupt", f.Icon, 'CooldownFrameTemplate')
 		f.Icon.cooldown:SetAllPoints(f.Icon)
 		f.Icon.cooldown:SetEdgeTexture("Interface\\Cooldown\\edge")    --("Interface\\Cooldown\\edge-LoC") Blizz CD
@@ -1993,50 +2124,58 @@ function EasyCC:OnLoad()
 		f.Icon.cooldown:SetReverse(false) --will reverse the swipe if actionbars or debuff, by default bliz sets the swipe to actionbars if this = true it will be set to debuffs
 		f.Icon.cooldown:SetDrawBling(true)
 		f.Icon.cooldown:SetHideCountdownNumbers(true)
+
 		f.Ltext = f.Icon:CreateFontString(nil, "ARTWORK")
 		f.Ltext:SetFont(STANDARD_TEXT_FONT, 24, "THICKOUTLINE")
 		f.Ltext:SetTextColor(1, .75, 0, 1)
 		f.Ltext:SetJustifyH("LEFT")
 		f.Ltext:SetParent(f.Icon)
+		f.Ltext:SetJustifyH("LEFT")
+
 		f.timer = f.Icon:CreateFontString(nil, "ARTWORK")
 		f.timer:SetParent(f.Icon)
 		f.timer:SetFont(STANDARD_TEXT_FONT, 20, "OUTLINE")
-		f.Ltext:SetJustifyH("LEFT")
-		local text = f.timer
-		local ONUPDATE_INTERVAL = 1; local start
+
+		local ONUPDATE_INTERVAL = 1;
+
 		f.barU = CreateFrame("Frame", "f.barU")
 		f.barU.texture = f.barU:CreateTexture(f.barU, 'BACKGROUND')
 		f.barU.texture:SetTexture("Interface\\Cooldown\\Loc-RedLine")
 		f.barU.texture:SetHeight(17)
 		f.barU.texture:SetParent(f)
+
 		f.barB = CreateFrame("Frame", "f.barU")
 		f.barB.texture = f.barB:CreateTexture(f.barB, 'BACKGROUND')
 		f.barB.texture:SetTexture("Interface\\Cooldown\\Loc-RedLine")
 		f.barB.texture:SetHeight(17)
 		f.barB.texture:SetParent(f)
 		f.barB.texture:SetRotation(math.rad(180))
+
+    f.displayTime = fadeTime -- Default Timer Display
+    f.TimeSinceLastUpdate = 0
 		-- The number of seconds since the last update, script to set the duration to show before fading
 		f.Icon:SetScript("OnUpdate", function(self, elapsed)
-			if TimeSinceLastUpdate == 0 then start = EasyCC.start or 0 end
-      local timeRemaining = start - GetTime() + (f.Icon.cooldown:GetCooldownDuration()/1000)
-      if ( timeRemaining >= 10 ) then
-        local number = string.format("%d", timeRemaining)
-        text:SetText(number .." seconds")
-      elseif (timeRemaining < 9.95) then -- From 9.95 to 9.99 it will print 10.0 instead of 9.9
-        local number = string.format("%.1F", timeRemaining);
-        text:SetText(number .." seconds")
+			if f.startTime then
+        local timeRemaining = f.startTime - GetTime() + (f.Icon.cooldown:GetCooldownDuration()/1000)
+        if ( timeRemaining >= 10 ) then
+          local number = strformat("%d", timeRemaining)
+          f.timer:SetText(number .." seconds")
+        elseif (timeRemaining < 9.95) then -- From 9.95 to 9.99 it will print 10.0 instead of 9.9
+          local number = strformat("%.1F", timeRemaining);
+          f.timer:SetText(number .." seconds")
+        end
       end
 			--text:SetText(string.format("%.1f", start - GetTime() + (f.Icon.cooldown:GetCooldownDuration()/1000)) .." seconds")
-			TimeSinceLastUpdate = TimeSinceLastUpdate + elapsed
-			if TimeSinceLastUpdate >= time then
-				TimeSinceLastUpdate = 0
-				if f and f:IsShown() then f:Hide(); self.priority = nil; self.startTime = nil; end
+			f.TimeSinceLastUpdate = f.TimeSinceLastUpdate + elapsed
+			if f.TimeSinceLastUpdate >= f.displayTime then
+				f.TimeSinceLastUpdate = 0
+				if f and f:IsShown() then f:Hide() end
 	      if EasyCC.test then EasyCC:toggletest() end
 			end
 		end)
 		-- When the frame is shown, reset the update f.timer
 		f.Icon:SetScript("OnShow", function(self)
-			TimeSinceLastUpdate = 0
+			f.TimeSinceLastUpdate = 0
 		end)
 		f:SetScript("OnEvent", self.OnEvent)
 		f:SetScript("OnDragStart", self.StartMoving) -- this function is already built into the Frame class
@@ -2200,13 +2339,13 @@ function EasyCC:toggletest()
       tinsert(keys, k)
     end
     local _, _, icon = GetSpellInfo(keys[random(#keys)])
-		EasyCC:Display(icon, mytime[ math.random( #mytime ) ], string )
+		EasyCC:Display(icon, GetTime(), mytime[ math.random( #mytime ) ], string )
 		f:SetMovable(true)
 		f:RegisterForDrag("LeftButton", "RightButton")
 		f:EnableMouse(true)
 	else
 		self.test = nil
-		TimeSinceLastUpdate = 0
+		f.TimeSinceLastUpdate = 0
 		if f and f:IsShown() then f:Hide() end
 		f:EnableMouse(false)
 		f:RegisterForDrag()
@@ -2396,12 +2535,15 @@ OptionsPanel.default = function() -- This method will run when the player clicks
 	L.Spells:WipeAll()
 	EasyCC:ADDON_LOADED(addonName)
 	L.Spells:UpdateAll()
+
   BlizzardOptionsPanel_Slider_Enable(LossOfControlInterrupt)
   BlizzardOptionsPanel_Slider_Enable(LossOfControlFull)
   BlizzardOptionsPanel_Slider_Enable(LossOfControlSilence)
   BlizzardOptionsPanel_Slider_Enable(LossOfControlDisarm)
   BlizzardOptionsPanel_Slider_Enable(LossOfControlRoot)
+
   if EasyCC.test then EasyCC:toggletest() end
+
 end
 
 OptionsPanel.refresh = function()
@@ -2413,6 +2555,7 @@ OptionsPanel.refresh = function()
 	LossOfControlDisarm:SetValue(EasyCCDB.LossOfControlDisarm)
 	LossOfControlRoot:SetValue(EasyCCDB.LossOfControlRoot)
 	Scale:SetValue(EasyCCDB.Scale)
+
   if EasyCC.test then Unlock:SetChecked(true) else Unlock:SetChecked(false) end
   if EasyCCDB.LossOfControl then SetCVar("lossOfControl", 1) else SetCVar("lossOfControl", 0) end
   if EasyCCDB.LossOfControlInterrupt == "2" then SetCVar("lossOfControlInterrupt", 2) elseif EasyCCDB.LossOfControlInterrupt == "1" then SetCVar("lossOfControlInterrupt", 1) else SetCVar("lossOfControlInterrupt", 0) end
@@ -2420,6 +2563,7 @@ OptionsPanel.refresh = function()
   if EasyCCDB.LossOfControlSilence == "2" then SetCVar("lossOfControlSilence", 2) elseif EasyCCDB.LossOfControlSilence == "1" then SetCVar("lossOfControlSilence", 1) else SetCVar("lossOfControlSilence", 0) end
   if EasyCCDB.LossOfControlDisarm == "2" then SetCVar("lossOfControlDisarm", 2) elseif EasyCCDB.LossOfControlDisarm == "1" then SetCVar("lossOfControlDisarm", 1) else SetCVar("lossOfControlDisarm", 0) end
   if EasyCCDB.LossOfControlRoot == "2" then SetCVar("lossOfControlRoot", 2) elseif EasyCCDB.LossOfControlRoot == "1" then SetCVar("lossOfControlRoot", 1) else SetCVar("lossOfControlRoot", 0) end
+
 end
 
 InterfaceOptions_AddCategory(OptionsPanel)
@@ -2434,16 +2578,19 @@ end
 
 function SlashCmd:reset()
 	print("|cff00ccffEasyCC|r","|cffFF7D0A (TBC)|r",": Reset")
+
   L.Spells:ResetAllSpellList()
   _G.EasyCCDB = nil
   L.Spells:WipeAll()
   EasyCC:ADDON_LOADED(addonName)
   L.Spells:UpdateAll()
+
   BlizzardOptionsPanel_Slider_Enable(LossOfControlInterrupt)
   BlizzardOptionsPanel_Slider_Enable(LossOfControlFull)
   BlizzardOptionsPanel_Slider_Enable(LossOfControlSilence)
   BlizzardOptionsPanel_Slider_Enable(LossOfControlDisarm)
   BlizzardOptionsPanel_Slider_Enable(LossOfControlRoot)
+
   LossOfControl:SetChecked(EasyCCDB.LossOfControl)
   LossOfControlInterrupt:SetValue(EasyCCDB.LossOfControlInterrupt)
   LossOfControlFull:SetValue(EasyCCDB.LossOfControlFull)

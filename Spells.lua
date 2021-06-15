@@ -102,11 +102,12 @@ local tabs = {}
 
 local tabsType = {
 	"CC",
-	"Interrupt",
 	"Silence",
+	"Interrupt",
 	"Root",
 	"Disarm",
-	"Other"
+	"Other",
+	"Warning",
 	}
 
 local tabsIndex = {}
@@ -476,7 +477,7 @@ local function SetTabs(frame, numTabs, ...)
 			local spell = GetSpellInfo(tonumber(tab.content.input.customspelltext))
 			if spell then spell = tonumber(tab.content.input.customspelltext) else spell = tab.content.input.customspelltext end
 			if drop_val and tab.content.input.customspelltext then
-	  	--CustomAddedCompileSpells(spell, drop_val, i)]] --DISABLED FOR NOW
+	  	CustomAddedCompileSpells(spell, drop_val, i)
 			print("|cff00ccffEasyCC|r : Coming Soon")
 			else
 			print("|cff00ccffEasyCC|r : Please Select a Spell Type or Enter a spellId or Name")
@@ -812,7 +813,7 @@ local numberOfSpellChecksPerRow = 5
 								end
 								if dropdown_val ~= prio then
 									print("|cff00ccffEasyCC|r : Coming Soon")
-									--[[CustomPVEDropDownCompileSpells(spell, dropdown_val, i, c)
+									CustomPVEDropDownCompileSpells(spell, dropdown_val, i, c)
 									prio = dropdown_val
 									prio = L[prio] or prio
 									if type(spell) == "number" then
@@ -825,7 +826,7 @@ local numberOfSpellChecksPerRow = 5
 										local cutString = substring(aString, 0, 23);
 										spellCheck.text:SetText(cutString.."\n".."Custom Priority");
 										spellCheck.icon:SetNormalTexture(136235)
-									end]]
+									end
 								end
 							 end
 					}
