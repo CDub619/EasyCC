@@ -104,8 +104,8 @@ local tabsType = {
 	"CC",
 	"Silence",
 	"Interrupt",
-	"Root",
 	"Disarm",
+	"Root",
   "Immune",
   "Other",
   "Warning",
@@ -274,8 +274,7 @@ local function CustomAddedCompileSpells(spell, prio, tab, string) --Adding a Cus
 			end
 		end
 	end
-	L.spellIds[spell] = prio
-	_G.EasyCCDB.spellEnabled[spell] = true
+	L.spellIds[spell] = prio; _G.EasyCCDB.spellDisabled[spell] = nil
 	if string then _G.EasyCCDB.customString[spell] = string end
 	L.Spells:WipeSpellList(tab)
 	tblinsert(_G.EasyCCDB.customSpellIds, {spell, prio, string, nil, nil, "Custom Spell", tab})
@@ -297,7 +296,7 @@ local function CustomPVEDropDownCompileSpells(spell, prio, tab, c) --Changing th
 			if spell == spellID then
 				if prio == "Delete" then
 					L.spellIds[spell] = nil
-					_G.EasyCCDB.spellEnabled[spell] = nil
+					_G.EasyCCDB.spellDisabled[spell] = nil
 					_G.EasyCCDB.customString[spell] = nil
 					Spells:WipeSpellList(tab)
 					DeleteSpellFrame(spell, c)
@@ -650,8 +649,8 @@ function Spells:EnableAll(i)
 			spellCheck.icon = _G[spellCheck:GetName().."Icon"]
 			spellCheck.icon.check = spellCheck
 			spellID = spellCheck.spellID
-			_G.EasyCCDB.spellEnabled[spellID] = true
-			spellCheck:SetChecked(_G.EasyCCDB.spellEnabled[spellID] or false);
+			_G.EasyCCDB.spellDisabled[spellID] = nil
+			spellCheck:SetChecked(true);
 		end
 	end
 end
@@ -665,8 +664,8 @@ function Spells:DisableAll(i)
 			spellCheck.icon = _G[spellCheck:GetName().."Icon"]
 			spellCheck.icon.check = spellCheck
 			spellID = spellCheck.spellID
-			_G.EasyCCDB.spellEnabled[spellID] = false
-			spellCheck:SetChecked(_G.EasyCCDB.spellEnabled[spellID] or false);
+			_G.EasyCCDB.spellDisabled[spellID] = true
+			spellCheck:SetChecked(false);
 		end
 	end
 end
@@ -874,13 +873,12 @@ local numberOfSpellChecksPerRow = 5
 					local dropdown = createDropdown(drop_opts)
 					dropdown:SetPoint("LEFT", spellCheck.text, "RIGHT", -10,0)
 					dropdown:SetScale(.55)
-
-					spellCheck:SetChecked(_G.EasyCCDB.spellEnabled[spellID] or false);   --Error on 1st ADDON_LOADED
 					spellCheck.spellID = spellID
+					if _G.EasyCCDB.spellDisabled[spellCheck.spellID] then spellCheck:SetChecked(false) else spellCheck:SetChecked(true) end    --Error on 1st ADDON_LOADED
 					spellCheck:SetScript("OnClick",
 						function()
 						 GameTooltip:Hide()
-						 _G.EasyCCDB.spellEnabled[spellCheck.spellID] = spellCheck:GetChecked()
+						 if not spellCheck:GetChecked() then _G.EasyCCDB.spellDisabled[spellCheck.spellID] = true end
 						 makeAndShowSpellTTPVE(spellCheck)
 						end
 					);

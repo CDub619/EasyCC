@@ -351,7 +351,7 @@ local spellsTable = {
   {14907  , "Root"},				-- Frost Nova
   {22645  , "Root"},				-- Frost Nova
   --------------------------------------------------------
-  {2676, "Interrupt"},		-- Pulverize
+  --[[{2676, "Interrupt"},		-- Pulverize
   {5133, "Interrupt"},		-- Interrupt (PT)
   {8714, "Interrupt"},		-- Overwhelming Musk
   {10887, "Interrupt"},		-- Crowd Pummel
@@ -434,7 +434,7 @@ local spellsTable = {
   {47081, "Interrupt"},		-- Pummel
   {11978, "Interrupt"},		-- Pummel (Iron Knuckles Item)
   {13491, "Interrupt"},		-- Pummel (Iron Knuckles Item)
-  {29443, "Interrupt"},		-- Counterspell (Clutch of Foresight)
+  {29443, "Interrupt"},	]]	-- Counterspell (Clutch of Foresight)
   {20654  , "Root"},				-- Entangling Roots
   {22800  , "Root"},				-- Entangling Roots
   {20699  , "Root"},				-- Entangling Roots
@@ -1770,20 +1770,20 @@ local defaultString = {
   ["CC"] = "Crowd Controlled",
   ["Silence"] = "Silenced",
   ["Interrupt"] = "Interrupted",
-  ["Root"] ="Rooted",
   ["Disarm"] = "Disarmed",
+  ["Root"] ="Rooted",
   ["Immune"] = "Immune",
   ["Other"] = "Other",
   ["Warning"] = "Warning",
-  ["Snare"] = "Snare"
+  ["Snare"] = "Snared"
 }
 
 local tabs = {
   "CC",
 	"Silence",
 	"Interrupt",
-	"Root",
 	"Disarm",
+	"Root",
   "Immune",
   "Other",
   "Warning",
@@ -1798,23 +1798,25 @@ for i = 1, #tabs do
 end
 
 local DBdefaults = {
- version = 2.05,
+ version = 2.08,
  Scale = 1,
  xOfs = 0,
  yOfs = -30,
+ point = "CENTER",
+ relativePoint = "CENTER",
  LossOfControl = true,
- spellEnabled = { },
+ spellDisabled = { },
  customSpellIds = { },
  customString = { },
  priority = {		-- higher numbers have more priority; 0 = disabled
    CC = 100,
-   Interrupt = 80,
-   Silence = 60,
-   Root = 40,
-   Disarm = 20,
-   Immune = 15,
-   Other = 10,
-   Warning = 0,
+   Interrupt = 90,
+   Silence = 80,
+   Disarm = 60,
+   Root = 50,
+   Immune = 40,
+   Other = 30,
+   Warning = 20,
    Snare = 0,
   },
 durationTime = {
@@ -1862,6 +1864,8 @@ EasyCC:RegisterEvent("LOSS_OF_CONTROL_UPDATE")
 function EasyCC:LossOfControl(data, Index)
  	if not data then f:Hide(); f.priority = nil; f.startTime = nil; return end
 
+  local customString = EasyCCDB.customString
+
   local locType = data.locType;
  	local spellID = data.spellID;
  	local text = data.displayText;
@@ -1883,7 +1887,7 @@ function EasyCC:LossOfControl(data, Index)
   if spellID then f.InterruptspellID = spellID else f.InterruptspellID = nil end
   if iconTexture then f.InterrupticonTexture = iconTexture else f.InterrupticonTexture = nil end
   if startTime then f.InterruptstartTime = startTime; else f.InterruptstartTime = nil end
-  if text then f.Interrupttext = text else f.Interrupttext = nil end
+  if text then f.Interrupttext = customString[spellID] or text else f.Interrupttext = nil end
   if duration then f.Interruptduration = duration else f.Interruptduration = nil end
 
   Ctimer(duration, function() f.InterruptspellID = nil; f.InterrupticonTexture = nil; f.InterruptstartTime = nil; f.Interruptduration = nil; f.Interrupttext = nil end)
@@ -1909,7 +1913,7 @@ function EasyCC:NewSpell(spellID, locType)
   else
     Type = "Other"; print("EasyCC Discovered New Other " ..spell); --May Not Want to Include this based on Retail Interactions
   end
-  spellIds[spellID] = Type; EasyCCDB.spellEnabled[spellID] = true
+  spellIds[spellID] = Type; -- _G.EasyCCDB.spellDisabled[spell] = nil --If already delted then this will disable it
   tblinsert(EasyCCDB.customSpellIds, {spellID, Type, instanceType, nil, name.."\n"..ZoneName, "Discovered", #L.spells})
   tblinsert(L.spells[#L.spells][tabsIndex[Type]], {spellID, Type, nil, instanceType, name.."\n"..ZoneName, "Discovered", #L.spells})
   L.Spells:UpdateTab(#L.spells)
@@ -1920,7 +1924,7 @@ function EasyCC:PlayerAura(unit)
 	if not EasyCCDB.LossOfControl then return end
 
   local priority = EasyCCDB.priority
-  local enabled = EasyCCDB.spellEnabled
+  local disabled = EasyCCDB.spellDisabled
   local durationTime = EasyCCDB.durationTime
   local customString = EasyCCDB.customString
   local maxPriority = 1
@@ -1939,7 +1943,7 @@ function EasyCC:PlayerAura(unit)
     local spellCategory = spellIds[spellId] or spellIds[name]
     local Priority = priority[spellCategory]
     local durationShow = durationTime[spellCategory]
-    if (enabled[spellId] or enabled[name]) and durationShow and durationShow > 0 then
+    if ((not disabled[spellId]) and (not disabled[name])) and durationShow and durationShow > 0 then
       if Priority == maxPriority and expirationTime > maxExpirationTime then
   			maxExpirationTime = expirationTime
   			Duration = duration
@@ -1970,7 +1974,7 @@ function EasyCC:PlayerAura(unit)
     local spellCategory = spellIds[spellId] or spellIds[name]
     local Priority = priority[spellCategory]
     local durationShow = durationTime[spellCategory]
-    if (enabled[spellId] or enabled[name]) and durationShow and durationShow > 0 then
+    if ((not disabled[spellId]) and (not disabled[name])) and durationShow and durationShow > 0 then
       if Priority == maxPriority and expirationTime > maxExpirationTime then
         maxExpirationTime = expirationTime
         Duration = duration
@@ -1990,7 +1994,7 @@ function EasyCC:PlayerAura(unit)
     end
   end
 
-  if f.InterruptspellID and enabled[f.InterruptspellID] then
+  if f.InterruptspellID and not disabled[f.InterruptspellID] then
     local spellCategory = spellIds[f.InterruptspellID]
     local Priority = priority[spellCategory]
     local expirationTime = f.InterruptstartTime + f.Interruptduration
@@ -2061,12 +2065,10 @@ function EasyCC:Display(icon, startTime, duration, string, durationDisplay)
 		f.Ltext:SetPoint("LEFT", f.Icon, "RIGHT", 7.5, 0)
 		f.timer:Hide()
 	end
-	if IsAddOnLoaded("BambiUI") then
+  if IsAddOnLoaded("BambiUI") then
 		point, relativeTo, relativePoint, xOfs, yOfs = PartyAnchor5:GetPoint()
-		y = yOfs;	x = 0
-	else
-		y = EasyCCDB.yOfs; x = EasyCCDB.xOfs
-	end
+		EasyCCDB.point = "CENTER"; EasyCCDB.relativePoint = "CENTER"; EasyCCDB.yOfs = yOfs; EasyCCDB.xOfs = 0;
+  end
 	f.barB.texture:SetWidth(f.Icon:GetWidth() + (strlen(f.Ltext:GetText()) * 21))
 	f.barU.texture:SetWidth(f.Icon:GetWidth() + (strlen(f.Ltext:GetText()) * 21))
 	f.barU.texture:ClearAllPoints()
@@ -2076,8 +2078,30 @@ function EasyCC:Display(icon, startTime, duration, string, durationDisplay)
 	f:SetWidth(f.Icon:GetWidth() + (strlen(f.Ltext:GetText()) * 16))
   f.backgroundTexture:SetWidth(f.Icon:GetWidth() + (strlen(f.Ltext:GetText()) * 16))
 	f:ClearAllPoints()
-	f:SetPoint("CENTER", UIParent, "CENTER", x, y)
+  f:SetPoint(
+    EasyCCDB.point or "CENTER",
+    UIParent,
+    EasyCCDB.relativePoint or "CENTER",
+    EasyCCDB.xOfs or 0,
+    EasyCCDB.yOfs or 0
+  )
 	f:Show()
+end
+
+function EasyCC:StopMoving()
+	f.point, f.anchor, f.relativePoint, f.x, f.y = f:GetPoint()
+	if not f.anchor then
+	f:ClearAllPoints()
+	f:SetPoint(
+		f.point or "CENTER",
+		UIParent,
+		f.relativePoint or "CENTER",
+		f.x or 0,
+		f.y or 0
+	)
+  end
+  EasyCCDB.point = f.point; EasyCCDB.relativePoint = f.relativePoint; EasyCCDB.yOfs = f.y; EasyCCDB.xOfs = f.x
+	self:StopMovingOrSizing()
 end
 
 function EasyCC:OnLoad()
@@ -2174,7 +2198,7 @@ function EasyCC:OnLoad()
 		end)
 		f:SetScript("OnEvent", self.OnEvent)
 		f:SetScript("OnDragStart", self.StartMoving) -- this function is already built into the Frame class
-		f:SetScript("OnDragStop", function(self) self:StopMovingOrSizing() end)
+		f:SetScript("OnDragStop", self.StopMoving)
 		print("|cff00ccffEasyCC|r","|cffFF7D0A (TBC)|r",": Type \"/ecc\"")
 	end
 end
@@ -2185,18 +2209,23 @@ function EasyCC:ADDON_LOADED(arg1)
 		if (_G.EasyCCDB == nil) or (_G.EasyCCDB.version == nil) then
 			_G.EasyCCDB = CopyTable(DBdefaults)
 			print("EasyCC Defaults Loaded.")
-		elseif _G.EasyCCDB.version < DBdefaults.version then
+	  elseif _G.EasyCCDB.version < DBdefaults.version then
 			print("EasyCC Version ".._G.EasyCCDB.version.." Updated to "..DBdefaults.version)
 			for j, u in pairs(DBdefaults) do
-				if (_G.EasyCCDB[j] == nil) then
+				if _G.EasyCCDB[j] == nil then
 					_G.EasyCCDB[j] = u
-					print("EasyCC Option "..j.." Added w/ Update.")
-				end
+        elseif type(u) == "table" then
+          for k, v in pairs(u) do
+            if _G.EasyCCDB[j][k] == nil then
+              _G.EasyCCDB[j][k] = v
+            end
+          end
+        end
 			end
 		end
-		EasyCCDB = _G.EasyCCDB
-		self:CompileSpells()
-		L.Spells:Addon_Load()
+    EasyCCDB = _G.EasyCCDB
+    self:CompileSpells()
+    L.Spells:Addon_Load()
 	end
 end
 
@@ -2318,11 +2347,7 @@ function EasyCC:CompileSpells(typeUpdate)
 		L.spells = spells
 		L.spellIds = spellIds
 		--check for any 1st time spells being added and set to On
-		for k in pairs(spellIds) do --spellIds is the combined PVE list, Spell List and the Discovered & Custom lists from tblinsert above
-			if EasyCCDB.spellEnabled[k] == nil then
-			EasyCCDB.spellEnabled[k]= true
-			end
-		end
+
     if EasyCCDB.LossOfControl then SetCVar("lossOfControl", 1) else SetCVar("lossOfControl", 0) end
     if EasyCCDB.durationTime["CC"] == 2 then SetCVar("lossOfControlFull", 2) elseif EasyCCDB.durationTime["CC"] == 1 then SetCVar("lossOfControlFull", 1) else SetCVar("lossOfControlFull", 0) end
     if EasyCCDB.durationTime["Silence"] == 2 then SetCVar("lossOfControlSilence", 2) elseif EasyCCDB.durationTime["Silence"] == 1 then SetCVar("lossOfControlSilence", 1) else SetCVar("lossOfControlSilence", 0) end
@@ -2347,7 +2372,7 @@ function EasyCC:toggletest()
     local _, _, icon = GetSpellInfo(keys[random(#keys)])
 		EasyCC:Display(icon, GetTime(), mytime[ math.random( #mytime ) ], string )
 		f:SetMovable(true)
-		f:RegisterForDrag("LeftButton", "RightButton")
+		f:RegisterForDrag("LeftButton")
 		f:EnableMouse(true)
 		print("|cff00ccffEasyCC|r","|cffFF7D0A (TBC)|r",": Test Mode On")
 	else
@@ -2357,8 +2382,6 @@ function EasyCC:toggletest()
 		f:SetMovable(false)
     f.TimeSinceLastUpdate = 0
     if f and f:IsShown() then f:Hide() end
-		f.point, f.anchor, f.relativePoint, f.x, f.y = f:GetPoint()
-    EasyCCDB.yOfs = f.y; EasyCCDB.xOfs = f.x
 		print("|cff00ccffEasyCC|r","|cffFF7D0A (TBC)|r",": Test Mode Off")
 	end
 end
@@ -2390,29 +2413,34 @@ title:SetFont("Fonts\\FRIZQT__.TTF", 30 )
 title:SetText(addonName)
 title:SetPoint("TOPLEFT", 15, -15)
 
-local Spells = CreateFrame("Button", O.."Spells", OptionsPanel, "OptionsButtonTemplate")
-_G[O.."Spells"]:SetText("Spells")
-Spells:SetHeight(28)
-Spells:SetWidth(100)
-Spells:SetScale(1)
-Spells:SetScript("OnClick", function(self) L.Spells:Toggle() end)
-Spells:SetPoint("LEFT", title, "RIGHT", 10, 3)
-
 local BambiText = OptionsPanel:CreateFontString(nil, "ARTWORK", "GameFontNormal")
 BambiText:SetFont("Fonts\\MORPHEUS.ttf", 16 )
 BambiText:SetText("By ".."|cff00ccffBambi|r")
 BambiText:SetPoint("TOPLEFT", title, "BOTTOMLEFT", 65, 1)
 
+local Spells = CreateFrame("Button", O.."Spells", OptionsPanel, "OptionsButtonTemplate")
+_G[O.."Spells"]:SetText("Customize Any Spells")
+Spells:SetHeight(28)
+Spells:SetWidth(200)
+Spells:SetScale(1)
+Spells:SetScript("OnClick", function(self) L.Spells:Toggle() end)
+Spells:SetPoint("LEFT", title, "RIGHT", 90, 3)
+
+local SpellText = OptionsPanel:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
+SpellText:SetFont("Fonts\\FRIZQT__.TTF", 11 )
+SpellText:SetText("Fully Customize Any Default Spell or Add Any Spell by Name or SpellId \n\n1: Add spells with Custom Text and Priority \n2: Delete or hide any spell in game \n3: Check out the discovered tab for spells found while playing\n \n ")
+SpellText:SetJustifyH("LEFT")
+SpellText:SetPoint("TOPLEFT", Spells, "BOTTOMRIGHT", -197, -5)
+
 local unlocknewline = OptionsPanel:CreateFontString(nil, "ARTWORK", "GameFontHighlight")
 unlocknewline:SetFont("Fonts\\FRIZQT__.TTF", 16 )
-unlocknewline:SetText(" (drag an icon to move)")
-
+unlocknewline:SetText(" (drag to move)")
 
 -- "Unlock" checkbox - allow the frames to be moved
 local Unlock = CreateFrame("CheckButton", O.."Unlock", OptionsPanel, "OptionsCheckButtonTemplate")
 function Unlock:OnClick()
 	if self:GetChecked() then
-		unlocknewline:SetPoint("LEFT", Unlock, "RIGHT", 69, 0)
+		unlocknewline:SetPoint("LEFT", Unlock, "RIGHT", 40, 0)
 		unlocknewline:Show()
 		EasyCC:toggletest()
 	else
@@ -2425,7 +2453,7 @@ Unlock:SetPoint("TOPLEFT",  title, "BOTTOMLEFT", 0, -22)
 
 local unlock = OptionsPanel:CreateFontString(nil, "ARTWORK", "GameFontHighlight")
 unlock:SetFont("Fonts\\FRIZQT__.TTF", 18 )
-unlock:SetText("Unlock")
+unlock:SetText("Test")
 unlock:SetPoint("LEFT", Unlock, "RIGHT", 6, 0)
 
 local Scale
@@ -2442,8 +2470,8 @@ local LossOfControlFull
 LossOfControlFull = CreateSlider("LossOfControlFull", OptionsPanel, 0, 2, 1, "LossOfControlFull")
 LossOfControlFull:SetScript("OnValueChanged", function(self, value)
 LossOfControlFull:SetScale(1)
-LossOfControlFull:SetWidth(200)
-	_G[self:GetName() .. "Text"]:SetText("LossOfControl Full".. " (" .. ("%.0f"):format(value) .. ")")
+LossOfControlFull:SetWidth(175)
+	_G[self:GetName() .. "Text"]:SetText("DisplayType Full CC".. " (" .. ("%.0f"):format(value) .. ")")
   EasyCCDB.durationTime["CC"] = mathfloor(tonumber(("%.0f"):format(value)))-- the real alpha value
 	SetCVar("lossOfControlFull", mathfloor(tonumber(("%.0f"):format(value))))
 end)
@@ -2452,8 +2480,8 @@ local LossOfControlSilence
 LossOfControlSilence = CreateSlider("LossOfControlSilence", OptionsPanel, 0, 2, 1, "LossOfControlSilence")
 LossOfControlSilence:SetScript("OnValueChanged", function(self, value)
 LossOfControlSilence:SetScale(1)
-LossOfControlSilence:SetWidth(200)
-	_G[self:GetName() .. "Text"]:SetText("LossOfControl Silence" .. " (" .. ("%.0f"):format(value) .. ")")
+LossOfControlSilence:SetWidth(175)
+	_G[self:GetName() .. "Text"]:SetText("DisplayType  Silence" .. " (" .. ("%.0f"):format(value) .. ")")
   EasyCCDB.durationTime["Silence"] = mathfloor(tonumber(("%.0f"):format(value)))-- the real alpha value
 	SetCVar("lossOfControlSilence", mathfloor(tonumber(("%.0f"):format(value))))
 end)
@@ -2462,8 +2490,8 @@ local LossOfControlInterrupt
 LossOfControlInterrupt = CreateSlider("LossOfControlInterrupt", OptionsPanel, 0, 2, 1, "LossOfControlInterrupt")
 LossOfControlInterrupt:SetScript("OnValueChanged", function(self, value)
 LossOfControlInterrupt:SetScale(1)
-LossOfControlInterrupt:SetWidth(200)
-	_G[self:GetName() .. "Text"]:SetText("LossOfControl Interrupt" .. " (" .. ("%.0f"):format(value) .. ")")
+LossOfControlInterrupt:SetWidth(175)
+	_G[self:GetName() .. "Text"]:SetText("DisplayType  Interrupt" .. " (" .. ("%.0f"):format(value) .. ")")
   EasyCCDB.durationTime["Interrupt"] = mathfloor(tonumber(("%.0f"):format(value)))-- the real alpha value
 	SetCVar("lossOfControlInterrupt", mathfloor(tonumber(("%.0f"):format(value))))
 end)
@@ -2472,8 +2500,8 @@ local LossOfControlDisarm
 LossOfControlDisarm = CreateSlider("LossOfControlDisarm", OptionsPanel, 0, 2, 1, "LossOfControlDisarm")
 LossOfControlDisarm:SetScript("OnValueChanged", function(self, value)
 LossOfControlDisarm:SetScale(1)
-LossOfControlDisarm:SetWidth(200)
-	_G[self:GetName() .. "Text"]:SetText("LossOfControl Disarm" .. " (" .. ("%.0f"):format(value) .. ")")
+LossOfControlDisarm:SetWidth(175)
+	_G[self:GetName() .. "Text"]:SetText("DisplayType  Disarm" .. " (" .. ("%.0f"):format(value) .. ")")
   EasyCCDB.durationTime["Disarm"] = mathfloor(tonumber(("%.0f"):format(value)))-- the real alpha value
 	SetCVar("lossOfControlDisarm", mathfloor(tonumber(("%.0f"):format(value))))
 end)
@@ -2482,10 +2510,127 @@ local LossOfControlRoot
 LossOfControlRoot = CreateSlider("LossOfControlRoot", OptionsPanel, 0, 2, 1, "LossOfControlRoot")
 LossOfControlRoot:SetScript("OnValueChanged", function(self, value)
 LossOfControlRoot:SetScale(1)
-LossOfControlRoot:SetWidth(200)
-	_G[self:GetName() .. "Text"]:SetText("LossOfControl Root" .. " (" .. ("%.0f"):format(value) .. ")")
+LossOfControlRoot:SetWidth(175)
+	_G[self:GetName() .. "Text"]:SetText("DisplayType  Root" .. " (" .. ("%.0f"):format(value) .. ")")
 	EasyCCDB.durationTime["Root"] = mathfloor(tonumber(("%.0f"):format(value)))-- the real alpha value
 	SetCVar("lossOfControlRoot", mathfloor(tonumber(("%.0f"):format(value))))
+end)
+
+local LossOfControlImmune
+LossOfControlImmune = CreateSlider("LossOfControlImmune", OptionsPanel, 0, 2, 1, "LossOfControlImmune")
+LossOfControlImmune:SetScript("OnValueChanged", function(self, value)
+LossOfControlImmune:SetScale(1)
+LossOfControlImmune:SetWidth(175)
+	_G[self:GetName() .. "Text"]:SetText("DisplayType  Immune" .. " (" .. ("%.0f"):format(value) .. ")")
+	EasyCCDB.durationTime["Immune"] = mathfloor(tonumber(("%.0f"):format(value)))-- the real alpha value
+end)
+
+local LossOfControlOther
+LossOfControlOther = CreateSlider("LossOfControlOther", OptionsPanel, 0, 2, 1, "LossOfControlOther")
+LossOfControlOther:SetScript("OnValueChanged", function(self, value)
+LossOfControlOther:SetScale(1)
+LossOfControlOther:SetWidth(175)
+	_G[self:GetName() .. "Text"]:SetText("DisplayType  Other" .. " (" .. ("%.0f"):format(value) .. ")")
+	EasyCCDB.durationTime["Other"] = mathfloor(tonumber(("%.0f"):format(value)))-- the real alpha value
+end)
+
+local LossOfControlWarning
+LossOfControlWarning = CreateSlider("LossOfControlWarning", OptionsPanel, 0, 2, 1, "LossOfControlWarning")
+LossOfControlWarning:SetScript("OnValueChanged", function(self, value)
+LossOfControlWarning:SetScale(1)
+LossOfControlWarning:SetWidth(175)
+	_G[self:GetName() .. "Text"]:SetText("DisplayType  Warning" .. " (" .. ("%.0f"):format(value) .. ")")
+	EasyCCDB.durationTime["Warning"] = mathfloor(tonumber(("%.0f"):format(value)))-- the real alpha value
+end)
+
+local LossOfControlSnare
+LossOfControlSnare = CreateSlider("LossOfControlSnare", OptionsPanel, 0, 2, 1, "LossOfControlSnare")
+LossOfControlSnare:SetScript("OnValueChanged", function(self, value)
+LossOfControlSnare:SetScale(1)
+LossOfControlSnare:SetWidth(175)
+	_G[self:GetName() .. "Text"]:SetText("DisplayType Snare" .. " (" .. ("%.0f"):format(value) .. ")")
+	EasyCCDB.durationTime["Snare"] = mathfloor(tonumber(("%.0f"):format(value)))-- the real alpha value
+end)
+
+local PriorityFull
+PriorityFull = CreateSlider("PriorityFull", OptionsPanel, 0, 100, 1, "PriorityFull")
+PriorityFull:SetScript("OnValueChanged", function(self, value)
+PriorityFull:SetScale(1)
+PriorityFull:SetWidth(200)
+	_G[self:GetName() .. "Text"]:SetText("Priority Full CC".. " (" .. ("%.0f"):format(value) .. ")")
+  EasyCCDB.priority["CC"] = mathfloor(tonumber(("%.0f"):format(value)))-- the real alpha value
+end)
+
+local PrioritySilence
+PrioritySilence = CreateSlider("PrioritySilence", OptionsPanel, 0, 100, 1, "PrioritySilence")
+PrioritySilence:SetScript("OnValueChanged", function(self, value)
+PrioritySilence:SetScale(1)
+PrioritySilence:SetWidth(200)
+	_G[self:GetName() .. "Text"]:SetText("Priority  Silence" .. " (" .. ("%.0f"):format(value) .. ")")
+  EasyCCDB.priority["Silence"] = mathfloor(tonumber(("%.0f"):format(value)))-- the real alpha value
+end)
+
+local PriorityInterrupt
+PriorityInterrupt = CreateSlider("PriorityInterrupt", OptionsPanel, 0, 100, 1, "PriorityInterrupt")
+PriorityInterrupt:SetScript("OnValueChanged", function(self, value)
+PriorityInterrupt:SetScale(1)
+PriorityInterrupt:SetWidth(200)
+	_G[self:GetName() .. "Text"]:SetText("Priority  Interrupt" .. " (" .. ("%.0f"):format(value) .. ")")
+  EasyCCDB.priority["Interrupt"] = mathfloor(tonumber(("%.0f"):format(value)))-- the real alpha value
+end)
+
+local PriorityDisarm
+PriorityDisarm = CreateSlider("PriorityDisarm", OptionsPanel, 0, 100, 1, "PriorityDisarm")
+PriorityDisarm:SetScript("OnValueChanged", function(self, value)
+PriorityDisarm:SetScale(1)
+PriorityDisarm:SetWidth(200)
+	_G[self:GetName() .. "Text"]:SetText("Priority  Disarm" .. " (" .. ("%.0f"):format(value) .. ")")
+  EasyCCDB.priority["Disarm"] = mathfloor(tonumber(("%.0f"):format(value)))-- the real alpha value
+end)
+
+local PriorityRoot
+PriorityRoot = CreateSlider("PriorityRoot", OptionsPanel, 0, 100, 1, "PriorityRoot")
+PriorityRoot:SetScript("OnValueChanged", function(self, value)
+PriorityRoot:SetScale(1)
+PriorityRoot:SetWidth(200)
+	_G[self:GetName() .. "Text"]:SetText("Priority  Root" .. " (" .. ("%.0f"):format(value) .. ")")
+	EasyCCDB.priority["Root"] = mathfloor(tonumber(("%.0f"):format(value)))-- the real alpha value
+end)
+
+local PriorityImmune
+PriorityImmune = CreateSlider("PriorityImmune", OptionsPanel, 0, 100, 1, "PriorityImmune")
+PriorityImmune:SetScript("OnValueChanged", function(self, value)
+PriorityImmune:SetScale(1)
+PriorityImmune:SetWidth(200)
+	_G[self:GetName() .. "Text"]:SetText("Priority  Immune" .. " (" .. ("%.0f"):format(value) .. ")")
+	EasyCCDB.priority["Immune"] = mathfloor(tonumber(("%.0f"):format(value)))-- the real alpha value
+end)
+
+local PriorityOther
+PriorityOther = CreateSlider("PriorityOther", OptionsPanel, 0, 100, 1, "PriorityOther")
+PriorityOther:SetScript("OnValueChanged", function(self, value)
+PriorityOther:SetScale(1)
+PriorityOther:SetWidth(200)
+	_G[self:GetName() .. "Text"]:SetText("Priority  Other" .. " (" .. ("%.0f"):format(value) .. ")")
+	EasyCCDB.priority["Other"] = mathfloor(tonumber(("%.0f"):format(value)))-- the real alpha value
+end)
+
+local PriorityWarning
+PriorityWarning = CreateSlider("PriorityWarning", OptionsPanel, 0, 100, 1, "PriorityWarning")
+PriorityWarning:SetScript("OnValueChanged", function(self, value)
+PriorityWarning:SetScale(1)
+PriorityWarning:SetWidth(200)
+	_G[self:GetName() .. "Text"]:SetText("Priority  Warning" .. " (" .. ("%.0f"):format(value) .. ")")
+	EasyCCDB.priority["Warning"] = mathfloor(tonumber(("%.0f"):format(value)))-- the real alpha value
+end)
+
+local PrioritySnare
+PrioritySnare = CreateSlider("PrioritySnare", OptionsPanel, 0, 100, 1, "PrioritySnare")
+PrioritySnare:SetScript("OnValueChanged", function(self, value)
+PrioritySnare:SetScale(1)
+PrioritySnare:SetWidth(200)
+	_G[self:GetName() .. "Text"]:SetText("Priority Snare" .. " (" .. ("%.0f"):format(value) .. ")")
+	EasyCCDB.priority["Snare"] = mathfloor(tonumber(("%.0f"):format(value)))-- the real alpha value
 end)
 
 local LossOfControl
@@ -2502,6 +2647,19 @@ LossOfControl:SetScript("OnClick", function(self)
 		BlizzardOptionsPanel_Slider_Enable(LossOfControlSilence)
 		BlizzardOptionsPanel_Slider_Enable(LossOfControlDisarm)
 		BlizzardOptionsPanel_Slider_Enable(LossOfControlRoot)
+    BlizzardOptionsPanel_Slider_Enable(LossOfControlImmune)
+    BlizzardOptionsPanel_Slider_Enable(LossOfControlOther)
+    BlizzardOptionsPanel_Slider_Enable(LossOfControlWarning)
+    BlizzardOptionsPanel_Slider_Enable(LossOfControlSnare)
+    BlizzardOptionsPanel_Slider_Enable(PriorityInterrupt)
+    BlizzardOptionsPanel_Slider_Enable(PriorityFull)
+    BlizzardOptionsPanel_Slider_Enable(PrioritySilence)
+    BlizzardOptionsPanel_Slider_Enable(PriorityDisarm)
+    BlizzardOptionsPanel_Slider_Enable(PriorityRoot)
+    BlizzardOptionsPanel_Slider_Enable(PriorityImmune)
+    BlizzardOptionsPanel_Slider_Enable(PriorityOther)
+    BlizzardOptionsPanel_Slider_Enable(PriorityWarning)
+    BlizzardOptionsPanel_Slider_Enable(PrioritySnare)
 	else
 		SetCVar("LossOfControl", 0)
 		BlizzardOptionsPanel_Slider_Disable(LossOfControlInterrupt)
@@ -2509,37 +2667,96 @@ LossOfControl:SetScript("OnClick", function(self)
 		BlizzardOptionsPanel_Slider_Disable(LossOfControlSilence)
 		BlizzardOptionsPanel_Slider_Disable(LossOfControlDisarm)
 		BlizzardOptionsPanel_Slider_Disable(LossOfControlRoot)
+    BlizzardOptionsPanel_Slider_Disable(LossOfControlImmune)
+		BlizzardOptionsPanel_Slider_Disable(LossOfControlOther)
+		BlizzardOptionsPanel_Slider_Disable(LossOfControlWarning)
+		BlizzardOptionsPanel_Slider_Disable(LossOfControlSnare)
+    BlizzardOptionsPanel_Slider_Disable(PriorityInterrupt)
+    BlizzardOptionsPanel_Slider_Disable(PriorityFull)
+    BlizzardOptionsPanel_Slider_Disable(PrioritySilence)
+    BlizzardOptionsPanel_Slider_Disable(PriorityDisarm)
+    BlizzardOptionsPanel_Slider_Disable(PriorityRoot)
+    BlizzardOptionsPanel_Slider_Disable(PriorityImmune)
+    BlizzardOptionsPanel_Slider_Disable(PriorityOther)
+    BlizzardOptionsPanel_Slider_Disable(PriorityWarning)
+    BlizzardOptionsPanel_Slider_Disable(PrioritySnare)
 	end
 end)
 
 if Unlock then Unlock:SetPoint("TOPLEFT",  title, "BOTTOMLEFT", 0, -30) end
-if Scale then Scale:SetPoint("TOPLEFT", Unlock, "BOTTOMLEFT", 5, -35) end
-if LossOfControl then LossOfControl:SetPoint("TOPLEFT", Scale, "BOTTOMLEFT", 5, -25) end
-if LossOfControlFull then LossOfControlFull:SetPoint("TOPLEFT", LossOfControl, "BOTTOMLEFT", 0, -25) end
+if Scale then Scale:SetPoint("TOPLEFT", Unlock, "BOTTOMLEFT", 5, -30) end
+if LossOfControl then LossOfControl:SetPoint("TOPLEFT", Scale, "BOTTOMLEFT", 5, -15) end
+
+if PriorityFull then PriorityFull:SetPoint("TOPLEFT", LossOfControl, "BOTTOMLEFT", 0, -22.5) end
+if PrioritySilence then PrioritySilence:SetPoint("TOPLEFT", PriorityFull, "BOTTOMLEFT", 0, -25) end
+if PriorityInterrupt then PriorityInterrupt:SetPoint("TOPLEFT", PrioritySilence, "BOTTOMLEFT", 0, -25) end
+if PriorityDisarm then PriorityDisarm:SetPoint("TOPLEFT", PriorityInterrupt, "BOTTOMLEFT", 0, -25) end
+if PriorityRoot then PriorityRoot:SetPoint("TOPLEFT", PriorityDisarm, "BOTTOMLEFT", 0, -25) end
+if PriorityImmune then PriorityImmune:SetPoint("TOPLEFT", PriorityRoot, "BOTTOMLEFT", 0, -25) end
+if PriorityOther then PriorityOther:SetPoint("TOPLEFT", PriorityImmune, "BOTTOMLEFT", 0, -25) end
+if PriorityWarning then PriorityWarning:SetPoint("TOPLEFT", PriorityOther, "BOTTOMLEFT", 0, -25) end
+if PrioritySnare then PrioritySnare:SetPoint("TOPLEFT", PriorityWarning, "BOTTOMLEFT", 0, -25) end
+
+if LossOfControlFull then LossOfControlFull:SetPoint("TOPLEFT", LossOfControl, "BOTTOMLEFT", 250, -22.5) end
 if LossOfControlSilence then LossOfControlSilence:SetPoint("TOPLEFT", LossOfControlFull, "BOTTOMLEFT", 0, -25) end
 if LossOfControlInterrupt then LossOfControlInterrupt:SetPoint("TOPLEFT", LossOfControlSilence, "BOTTOMLEFT", 0, -25) end
 if LossOfControlDisarm then LossOfControlDisarm:SetPoint("TOPLEFT", LossOfControlInterrupt, "BOTTOMLEFT", 0, -25) end
 if LossOfControlRoot then LossOfControlRoot:SetPoint("TOPLEFT", LossOfControlDisarm, "BOTTOMLEFT", 0, -25) end
+if LossOfControlImmune then LossOfControlImmune:SetPoint("TOPLEFT", LossOfControlRoot, "BOTTOMLEFT", 0, -25) end
+if LossOfControlOther then LossOfControlOther:SetPoint("TOPLEFT", LossOfControlImmune, "BOTTOMLEFT", 0, -25) end
+if LossOfControlWarning then LossOfControlWarning:SetPoint("TOPLEFT", LossOfControlOther, "BOTTOMLEFT", 0, -25) end
+if LossOfControlSnare then LossOfControlSnare:SetPoint("TOPLEFT", LossOfControlWarning, "BOTTOMLEFT", 0, -25) end
+
+local PLoCOptions = OptionsPanel:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
+PLoCOptions:SetFont("Fonts\\FRIZQT__.TTF", 11 )
+PLoCOptions:SetText("|cffff00000:|r Disables Icon Type \n#: Sets the priority for each spell category \n|cff00ff00#:|r Higher numbers have more priority\n \n ")
+PLoCOptions:SetJustifyH("LEFT")
+PLoCOptions:SetPoint("TOPLEFT", PrioritySnare, "TOPLEFT", 0, -25)
 
 local LoCOptions = OptionsPanel:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
-LoCOptions:SetFont("Fonts\\FRIZQT__.TTF", 12 )
-LoCOptions:SetText("LossOfControl must be enabled for any priority to work \n\n|cffff00000:|r Disables Icon Type \n1: Shows Icon Alert (2 Seconds) \n|cff00ff002:|r Shows Icon for the Full Duration\n \n ")
+LoCOptions:SetFont("Fonts\\FRIZQT__.TTF", 11 )
+LoCOptions:SetText("|cffff00000:|r Disables Icon Type \n1: Shows Icon Alert (2 Seconds) \n|cff00ff002:|r Shows Icon for the Full Duration\n \n ")
 LoCOptions:SetJustifyH("LEFT")
-LoCOptions:SetPoint("TOPLEFT", LossOfControlRoot, "TOPLEFT", 0, -30)
+LoCOptions:SetPoint("TOPLEFT", LossOfControlSnare, "TOPLEFT", 0, -25)
 
 -------------------------------------------------------------------------------
 OptionsPanel.default = function() -- This method will run when the player clicks "defaults"
+  if not LossOfControl:GetChecked() then
+    BlizzardOptionsPanel_Slider_Enable(LossOfControlInterrupt)
+    BlizzardOptionsPanel_Slider_Enable(LossOfControlFull)
+    BlizzardOptionsPanel_Slider_Enable(LossOfControlSilence)
+    BlizzardOptionsPanel_Slider_Enable(LossOfControlDisarm)
+    BlizzardOptionsPanel_Slider_Enable(LossOfControlRoot)
+    BlizzardOptionsPanel_Slider_Enable(LossOfControlInterrupt)
+    BlizzardOptionsPanel_Slider_Enable(LossOfControlFull)
+    BlizzardOptionsPanel_Slider_Enable(LossOfControlSilence)
+    BlizzardOptionsPanel_Slider_Enable(LossOfControlDisarm)
+    BlizzardOptionsPanel_Slider_Enable(LossOfControlRoot)
+    BlizzardOptionsPanel_Slider_Enable(LossOfControlImmune)
+    BlizzardOptionsPanel_Slider_Enable(LossOfControlOther)
+    BlizzardOptionsPanel_Slider_Enable(LossOfControlWarning)
+    BlizzardOptionsPanel_Slider_Enable(LossOfControlSnare)
+    BlizzardOptionsPanel_Slider_Enable(PriorityInterrupt)
+    BlizzardOptionsPanel_Slider_Enable(PriorityFull)
+    BlizzardOptionsPanel_Slider_Enable(PrioritySilence)
+    BlizzardOptionsPanel_Slider_Enable(PriorityDisarm)
+    BlizzardOptionsPanel_Slider_Enable(PriorityRoot)
+    BlizzardOptionsPanel_Slider_Enable(PriorityInterrupt)
+    BlizzardOptionsPanel_Slider_Enable(PriorityFull)
+    BlizzardOptionsPanel_Slider_Enable(PrioritySilence)
+    BlizzardOptionsPanel_Slider_Enable(PriorityDisarm)
+    BlizzardOptionsPanel_Slider_Enable(PriorityRoot)
+    BlizzardOptionsPanel_Slider_Enable(PriorityImmune)
+    BlizzardOptionsPanel_Slider_Enable(PriorityOther)
+    BlizzardOptionsPanel_Slider_Enable(PriorityWarning)
+    BlizzardOptionsPanel_Slider_Enable(PrioritySnare)
+  end
+
 	L.Spells:ResetAllSpellList()
 	_G.EasyCCDB = nil
 	L.Spells:WipeAll()
 	EasyCC:ADDON_LOADED(addonName)
 	L.Spells:UpdateAll()
-
-  BlizzardOptionsPanel_Slider_Enable(LossOfControlInterrupt)
-  BlizzardOptionsPanel_Slider_Enable(LossOfControlFull)
-  BlizzardOptionsPanel_Slider_Enable(LossOfControlSilence)
-  BlizzardOptionsPanel_Slider_Enable(LossOfControlDisarm)
-  BlizzardOptionsPanel_Slider_Enable(LossOfControlRoot)
 
   if EasyCC.test then EasyCC:toggletest() end
   print("|cff00ccffEasyCC|r","|cffFF7D0A (TBC)|r",": Reset")
@@ -2553,6 +2770,21 @@ OptionsPanel.refresh = function()
 	LossOfControlSilence:SetValue(EasyCCDB.durationTime["Silence"])
 	LossOfControlDisarm:SetValue(EasyCCDB.durationTime["Disarm"])
 	LossOfControlRoot:SetValue(EasyCCDB.durationTime["Root"])
+  LossOfControlImmune:SetValue(EasyCCDB.durationTime["Immune"])
+  LossOfControlOther:SetValue(EasyCCDB.durationTime["Other"])
+  LossOfControlWarning:SetValue(EasyCCDB.durationTime["Warning"])
+  LossOfControlSnare:SetValue(EasyCCDB.durationTime["Snare"])
+
+  PriorityInterrupt:SetValue(EasyCCDB.priority["Interrupt"])
+  PriorityFull:SetValue(EasyCCDB.priority["CC"])
+  PrioritySilence:SetValue(EasyCCDB.priority["Silence"])
+  PriorityDisarm:SetValue(EasyCCDB.priority["Disarm"])
+  PriorityRoot:SetValue(EasyCCDB.priority["Root"])
+  PriorityImmune:SetValue(EasyCCDB.priority["Immune"])
+  PriorityOther:SetValue(EasyCCDB.priority["Other"])
+  PriorityWarning:SetValue(EasyCCDB.priority["Warning"])
+  PrioritySnare:SetValue(EasyCCDB.priority["Snare"])
+
 	Scale:SetValue(EasyCCDB.Scale)
 
   if EasyCC.test then Unlock:SetChecked(true) else Unlock:SetChecked(false) end
