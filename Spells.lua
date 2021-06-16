@@ -106,8 +106,10 @@ local tabsType = {
 	"Interrupt",
 	"Root",
 	"Disarm",
-	"Other",
-	"Warning",
+  "Immune",
+  "Other",
+  "Warning",
+  "Snare",
 	}
 
 local tabsIndex = {}
@@ -252,7 +254,7 @@ local function GetSpellFrame(spellID, c)
 	end
 end
 
-local function CustomAddedCompileSpells(spell, prio, tab) --Adding a Custom Spell
+local function CustomAddedCompileSpells(spell, prio, tab, string) --Adding a Custom Spell
 	for k, v in ipairs(_G.EasyCCDB.customSpellIds) do
 		if spell == v[1] then
 			tblremove(_G.EasyCCDB.customSpellIds, k)
@@ -273,10 +275,11 @@ local function CustomAddedCompileSpells(spell, prio, tab) --Adding a Custom Spel
 		end
 	end
 	L.spellIds[spell] = prio
-	_G.EasyCCDB.spellEnabled[spell]= true
+	_G.EasyCCDB.spellEnabled[spell] = true
+	if string then _G.EasyCCDB.customString[spell] = string end
 	L.Spells:WipeSpellList(tab)
-	tblinsert(_G.EasyCCDB.customSpellIds, {spell, prio, nil, nil, "Custom Spell", tab, 1})
-	tblinsert(L.spells[tab][1], 1, {spell, prio, nil, nil, "Custom Spell", tab})
+	tblinsert(_G.EasyCCDB.customSpellIds, {spell, prio, string, nil, nil, "Custom Spell", tab})
+	tblinsert(L.spells[tab][1], 1, {spell, prio, string, nil, nil, "Custom Spell", tab})
 	L.Spells:UpdateSpellList(tab, true)
 	print("|cff00ccffEasyCC|r : ".."|cff009900Added |r"..spell.." |cff009900to to list: |r"..tabs[tab])
 end
@@ -290,22 +293,25 @@ local function CustomPVEDropDownCompileSpells(spell, prio, tab, c) --Changing th
 	end
 	for l = 1, (#tabsType) do
 		for k, v in ipairs(L.spells[tab][l]) do
-			local spellID, oldPrio, _, _, customname = unpack(v)
+			local spellID, oldPrio, _, _, _, customname = unpack(v)
 			if spell == spellID then
 				if prio == "Delete" then
 					L.spellIds[spell] = nil
-					_G.EasyCCDB.spellEnabled[spell]= nil
+					_G.EasyCCDB.spellEnabled[spell] = nil
+					_G.EasyCCDB.customString[spell] = nil
 					Spells:WipeSpellList(tab)
 					DeleteSpellFrame(spell, c)
 					tblremove(L.spells[tab][l], k)
 					Spells:UpdateSpellList(tab)
 					if L.spellList[spell] then
-					tblinsert(_G.EasyCCDB.customSpellIds, {spell, prio, nil, nil, customname, tab})  --v[7]: Category Tab to enter spell
+						tblinsert(_G.EasyCCDB.customSpellIds, {spell, prio, nil, nil, nil, customname, tab})  --v[7]: Category Tab to enter spell
 					end
 					print("|cff00ccffEasyCC|r : ".."|cff009900Removed |r"..spellID.." |cff009900from : |r"..tabs[tab])
 				else
 					L.spellIds[spell] = prio
-					tblinsert(_G.EasyCCDB.customSpellIds, {spell, prio, nil, nil, "Custom Priority", tab, tabsIndex[oldPrio]})  --v[7]: Category Tab to enter spell
+					local string = _G.EasyCCDB.customString[spell]
+					if string then customname = "Custom Spell" else customname  = "Custom Priority" end
+					tblinsert(_G.EasyCCDB.customSpellIds, {spell, prio, string, nil, nil, customname, tab})  --v[7]: Category Tab to enter spell
 					local priotext = L[prio] or prio
 					print("|cff00ccffEasyCC|r : ".."|cff009900Changed |r"..spell.." |cff009900to : |r"..priotext)
 				end
@@ -439,16 +445,37 @@ local function SetTabs(frame, numTabs, ...)
 
 		table.insert(contents, tab.content);
 
-	if tabs[i] == "Discovered Spells" then
-		else
-		tab.content.input = CreateFrame("EditBox", tab:GetName()..'CustomSpells', 	tab.content, 'InputBoxTemplate')
-  	tab.content.input:SetSize(150,22)
+	if tabs[i] == "Discovered Spells" then else
+		tab.content.input = CreateFrame("EditBox", tab:GetName()..'CustomSpells', tab.content, 'InputBoxTemplate')
+  	tab.content.input:SetSize(100,22)
   	tab.content.input:SetAutoFocus(false)
   	tab.content.input:SetMaxLetters(30)
-  	tab.content.input:SetPoint("TOPLEFT", tab.content, "TOPRIGHT", 45, -6)
+  	tab.content.input:SetPoint("TOPLEFT", tab.content, "TOPRIGHT", 95, 2)
   	tab.content.input:SetScript('OnChar', function(self, customspelltext)
-    tab.content.input.customspelltext = self:GetText()
-    end)
+    tab.content.input.customspelltext = self:GetText() end)
+		tab.content.input.Ltext = tab.content.input:CreateFontString(nil, "ARTWORK")
+		tab.content.input.Ltext:SetFont(STANDARD_TEXT_FONT, 14, "OUTLINE")
+		tab.content.input.Ltext:SetTextColor(1, .75, 0, 1)
+		tab.content.input.Ltext:SetText("Spell")
+		tab.content.input.Ltext:SetJustifyH("LEFT")
+		tab.content.input.Ltext:SetParent(tab.content.input)
+		tab.content.input.Ltext:SetJustifyH("RIGHT")
+		tab.content.input.Ltext:SetPoint("RIGHT", tab.content.input, "LEFT", -4, 0)
+		tab.content.inputText = CreateFrame("EditBox", tab:GetName()..'CustomSpellsString', tab.content, 'InputBoxTemplate')
+		tab.content.inputText:SetSize(100,22)
+		tab.content.inputText:SetAutoFocus(false)
+		tab.content.inputText:SetMaxLetters(35)
+		tab.content.inputText:SetPoint("TOPLEFT", tab.content, "TOPRIGHT", 95, -17)
+		tab.content.inputText:SetScript('OnChar', function(self, customspelltextstring)
+		tab.content.inputText.customspelltextstring = self:GetText(); end)
+		tab.content.inputText.Ltext = tab.content.inputText:CreateFontString(nil, "ARTWORK")
+		tab.content.inputText.Ltext:SetFont(STANDARD_TEXT_FONT, 14, "OUTLINE")
+		tab.content.inputText.Ltext:SetTextColor(1, .75, 0, 1)
+		tab.content.inputText.Ltext:SetText("Text")
+		tab.content.inputText.Ltext:SetJustifyH("LEFT")
+		tab.content.inputText.Ltext:SetParent(tab.content.inputText)
+		tab.content.inputText.Ltext:SetJustifyH("RIGHT")
+		tab.content.inputText.Ltext:SetPoint("RIGHT", tab.content.inputText, "LEFT", -4, 0)
     local drop_val
 		local drop_opts = {
 				['name']='raid',
@@ -466,7 +493,7 @@ local function SetTabs(frame, numTabs, ...)
 					end
 		}
 		local dropdown = createDropdownAdd(drop_opts)
-		dropdown:SetPoint("TOP", tab.content.input, "CENTER", -4, -10)
+		dropdown:SetPoint("TOPLEFT", tab.content.inputText, "BOTTOMLEFT", 10, 3)
 		dropdown:SetScale(.85)
 
   	tab.content.add = CreateFrame("Button",  tab:GetName()..'CustomSpellsButton', 	tab.content.input, "UIPanelButtonTemplate")
@@ -475,12 +502,12 @@ local function SetTabs(frame, numTabs, ...)
   	tab.content.add:SetText("Add")
   	tab.content.add:SetScript("OnClick", function(self, addenemy)
 			local spell = GetSpellInfo(tonumber(tab.content.input.customspelltext))
+			local string = tab.content.inputText.customspelltextstring
 			if spell then spell = tonumber(tab.content.input.customspelltext) else spell = tab.content.input.customspelltext end
-			if drop_val and tab.content.input.customspelltext then
-	  	CustomAddedCompileSpells(spell, drop_val, i)
-			print("|cff00ccffEasyCC|r : Coming Soon")
+			if drop_val and spell then
+	  		CustomAddedCompileSpells(spell, drop_val, i, string)
 			else
-			print("|cff00ccffEasyCC|r : Please Select a Spell Type or Enter a spellId or Name")
+				print("|cff00ccffEasyCC|r : Please Select a Spell Type or Enter a spellId or Name")
 			end
     end)
 	end
@@ -491,7 +518,7 @@ local function SetTabs(frame, numTabs, ...)
 		if tabs[i] == "Discovered Spells" then
 			tab.content.reset:SetPoint("CENTER", tab.content, "CENTER", 860, 245 )
 		else
-			tab.content.reset:SetPoint("CENTER", tab.content, "CENTER", 860, 209 )
+			tab.content.reset:SetPoint("CENTER", tab.content, "CENTER", 860, 214 )
 		end
 	tab.content.reset:SetText("Enable All")
 	tab.content.reset:SetScript("OnClick", function(self, enable)
@@ -502,7 +529,7 @@ local function SetTabs(frame, numTabs, ...)
 	tab.content.disable = CreateFrame("Button",  tab:GetName()..'CustomSpellsButton', 	tab.content, "UIPanelButtonTemplate")
 	tab.content.disable:SetSize(70,22)
 	tab.content.disable:SetScale(.7)
-	tab.content.disable:SetPoint("CENTER",	tab.content.reset, "CENTER", 0, -20)
+	tab.content.disable:SetPoint("TOP",	tab.content.reset, "BOTTOM", 0, -2)
 	tab.content.disable:SetText("Disable All")
 	tab.content.disable:SetScript("OnClick", function(self, disable)
 	Spells:DisableAll(i)
@@ -677,7 +704,7 @@ local numberOfSpellChecksPerRow = 5
 
 	for l = 1, #L.spells[i] do
 		for x = 1 , #L.spells[i][l] do
-		local spellID, prio, instanceType, zone, customname, _, _ = unpack(L.spells[i][l][x])
+		local spellID, prio, string, instanceType, zone, customname, tab = unpack(L.spells[i][l][x])
 			if (spellID) then
 				local spellCheck = GetSpellFrame(spellID, c)
 				if spellCheck then
@@ -717,17 +744,21 @@ local numberOfSpellChecksPerRow = 5
 								local name = GetSpellInfo(spellID)
 								if name then aString = substring(name, 0, 17)..": "..substring(prio, 0, 6) else aString ="SPELL REMOVED: "..spellID end
 								local cutString = substring(aString, 0, 23);
-								if customname then
-									spellCheck.text:SetText(cutString.."\n".."("..customname..")");
-								else
-									spellCheck.text:SetText(cutString);
-								end
+									if customname and string then
+										spellCheck.text:SetText(cutString.."\n".."("..customname..")".."\n"..string);
+									elseif customname then
+										spellCheck.text:SetText(cutString.."\n".."("..customname..")");
+									else
+										spellCheck.text:SetText(cutString);
+									end
 							end
 							spellCheck.icon:SetNormalTexture(GetSpellTexture(spellID) or 1)
 						else
 						aString = spellID..": "..prio
 						local cutString = substring(aString, 0, 23);
-							if customname then
+							if customname and string then
+								spellCheck.text:SetText(cutString.."\n".."("..customname..")".."\n"..string);
+							elseif customname then
 								spellCheck.text:SetText(cutString.."\n".."("..customname..")");
 							else
 								spellCheck.text:SetText(cutString);
@@ -738,24 +769,29 @@ local numberOfSpellChecksPerRow = 5
 					spellCheck:Show()
 				else
 					spellCheck = CreateFrame("CheckButton", c:GetName().."spellCheck"..spellID, c, "UICheckButtonTemplate");
+					--spellCheck.Green = CreateFrame("CheckButton", c:GetName().."spellCheck.Green"..spellID, c, "UICheckButtonTemplate");
 					if (previousSpellID) then
 						if (spellCount % numberOfSpellChecksPerRow == 0) then
 							Y = Y-40
 							X = 30
 						end
 						spellCheck:SetPoint("TOPLEFT", c, "TOPLEFT", X, Y);
+					--spellCheck.Green:SetPoint("TOP", spellCheck, "BOTTOM", 0, 21);
 						X = X+200
 					else
 						spellCheck:SetPoint("TOPLEFT", c, "TOPLEFT", 30, -10);
+						--spellCheck.Green:SetPoint("TOP", spellCheck, "BOTTOM", 0, 21);
 					end
 					spellCheck:Show()
+					--spellCheck.Green:SetScale(.4)
+					--spellCheck.Green:Show()
 
 					spellCheck.icon = CreateFrame("Button", spellCheck:GetName().."Icon", spellCheck, "ActionButtonTemplate")
 					spellCheck.icon:Disable()
 					spellCheck.icon:SetPoint("CENTER", spellCheck, "CENTER", -90, 0)
 					spellCheck.icon:SetScale(0.3)
 					spellCheck.icon:Show()
-					spellCheck.icon.check = spellCheck
+
 					local aString = spellID
 					prio = L[prio] or prio
 					if type(spellID) == "number" then
@@ -779,7 +815,9 @@ local numberOfSpellChecksPerRow = 5
 							local name = GetSpellInfo(spellID)
 							if name then aString = substring(name, 0, 17)..": "..substring(prio, 0, 6) else aString ="SPELL REMOVED: "..spellID end
 							local cutString = substring(aString, 0, 23);
-							if customname then
+							if customname and string then
+								spellCheck.text:SetText(cutString.."\n".."("..customname..")".."\n"..string);
+							elseif customname then
 								spellCheck.text:SetText(cutString.."\n".."("..customname..")");
 							else
 								spellCheck.text:SetText(cutString);
@@ -789,7 +827,9 @@ local numberOfSpellChecksPerRow = 5
 					else
 					aString = spellID..": "..prio
 					local cutString = substring(aString, 0, 23);
-						if customname then
+						if customname and string then
+							spellCheck.text:SetText(cutString.."\n".."("..customname..")".."\n"..string);
+						elseif customname then
 							spellCheck.text:SetText(cutString.."\n".."("..customname..")");
 						else
 							spellCheck.text:SetText(cutString);
@@ -812,19 +852,18 @@ local numberOfSpellChecksPerRow = 5
 									end
 								end
 								if dropdown_val ~= prio then
-									print("|cff00ccffEasyCC|r : Coming Soon")
 									CustomPVEDropDownCompileSpells(spell, dropdown_val, i, c)
 									prio = dropdown_val
 									prio = L[prio] or prio
 									if type(spell) == "number" then
 										aString = substring(GetSpellInfo(spellID), 0, 17)..": "..substring(prio, 0, 6) or "SPELL REMOVED: "..spellID
 										local cutString = substring(aString, 0, 23);
-										spellCheck.text:SetText(cutString.."\n".."Custom Priority");
+										if string then spellCheck.text:SetText(cutString.."\n".."("..customname..")".."\n"..string); else spellCheck.text:SetText(cutString.."\n".."Custom Priority") end
 										spellCheck.icon:SetNormalTexture(GetSpellTexture(spellID) or 1)
 									else
 										aString = spellID..": "..prio
 										local cutString = substring(aString, 0, 23);
-										spellCheck.text:SetText(cutString.."\n".."Custom Priority");
+										if string then spellCheck.text:SetText(cutString.."\n".."("..customname..")".."\n"..string); else spellCheck.text:SetText(cutString.."\n".."Custom Priority") end
 										spellCheck.icon:SetNormalTexture(136235)
 									end
 								end

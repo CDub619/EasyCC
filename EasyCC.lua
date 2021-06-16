@@ -1755,11 +1755,27 @@ local spellsTable = {
   	{27565  , "CC"},				-- Banish
   	{16350  , "CC"},				-- Freeze
 
-  	--{139  , "CC"},				-- Renew
-    --{15473, "Silence"}
+    --{139 , "CC", "Renew"},
+
   },
   {"Discovered Spells"
   },
+}
+
+
+local spellIds = { }
+local string = { } -- used for default text storage
+
+local defaultString = {
+  ["CC"] = "Crowd Controlled",
+  ["Silence"] = "Silenced",
+  ["Interrupt"] = "Interrupted",
+  ["Root"] ="Rooted",
+  ["Disarm"] = "Disarmed",
+  ["Immune"] = "Immune",
+  ["Other"] = "Other",
+  ["Warning"] = "Warning",
+  ["Snare"] = "Snare"
 }
 
 local tabs = {
@@ -1768,17 +1784,11 @@ local tabs = {
 	"Interrupt",
 	"Root",
 	"Disarm",
+  "Immune",
   "Other",
   "Warning",
-	}
-
-local spellIds = { }
-local string = { }
-local customString = {
-  [139] = "FUCK YOU",
-  [15473] ="HIEHE",
- }
-
+  "Snare",
+}
 
 L.spellsTable = spellsTable
 
@@ -1788,35 +1798,35 @@ for i = 1, #tabs do
 end
 
 local DBdefaults = {
- version = 2.04,
+ version = 2.05,
  Scale = 1,
  xOfs = 0,
  yOfs = -30,
  LossOfControl = true,
- DiscoveredSpells = { },
  spellEnabled = { },
  customSpellIds = { },
- LossOfControlFull = 2,
- LossOfControlInterrupt = 2,
- LossOfControlSilence = 2,
- LossOfControlDisarm = 2,
- LossOfControlRoot = 2,
+ customString = { },
  priority = {		-- higher numbers have more priority; 0 = disabled
    CC = 100,
    Interrupt = 80,
    Silence = 60,
    Root = 40,
    Disarm = 20,
+   Immune = 15,
    Other = 10,
    Warning = 0,
+   Snare = 0,
   },
 durationTime = {
   CC = 2,
   Interrupt = 2,
   Silence = 2,
   Root = 2,
+  Disarm = 2,
+  Immune = 2,
   Other = 2,
-  Warning = 0,
+  Warning = 2,
+  Snare = 2,
   },
 }
 
@@ -1848,14 +1858,75 @@ EasyCC:RegisterEvent("ADDON_LOADED")
 EasyCC:RegisterEvent("LOSS_OF_CONTROL_ADDED")
 EasyCC:RegisterEvent("LOSS_OF_CONTROL_UPDATE")
 
+
+function EasyCC:LossOfControl(data, Index)
+ 	if not data then f:Hide(); f.priority = nil; f.startTime = nil; return end
+
+  local locType = data.locType;
+ 	local spellID = data.spellID;
+ 	local text = data.displayText;
+ 	local iconTexture = data.iconTexture;
+ 	local startTime = data.startTime;
+ 	local timeRemaining = data.timeRemaining;
+ 	local duration = data.duration;
+ 	local lockoutSchool = data.lockoutSchool;
+ 	local priority = data.priority;
+ 	local displayType = data.displayType;
+
+  string[spellID] = customString[spellID] or text
+
+	if not spellIds[spellID] then EasyCC:NewSpell(spellID, locType) end --Need to filter out deleted spells fron DB or will keep finding same spell thats been deleted
+  if locType == "SCHOOL_INTERRUPT" then
+
+  text = strformat("%s Locked", GetSchoolString(lockoutSchool));
+
+  if spellID then f.InterruptspellID = spellID else f.InterruptspellID = nil end
+  if iconTexture then f.InterrupticonTexture = iconTexture else f.InterrupticonTexture = nil end
+  if startTime then f.InterruptstartTime = startTime; else f.InterruptstartTime = nil end
+  if text then f.Interrupttext = text else f.Interrupttext = nil end
+  if duration then f.Interruptduration = duration else f.Interruptduration = nil end
+
+  Ctimer(duration, function() f.InterruptspellID = nil; f.InterrupticonTexture = nil; f.InterruptstartTime = nil; f.Interruptduration = nil; f.Interrupttext = nil end)
+
+  EasyCC:PlayerAura("player")
+	end
+end
+
+
+function EasyCC:NewSpell(spellID, locType)
+  local name, instanceType, _, _, _, _, _, instanceID, _, _ = GetInstanceInfo()
+  local ZoneName = GetZoneText(); local spell = GetSpellInfo(spellID); local Type
+  if (locType == "STUN_MECHANIC") or (locType =="PACIFY") or (locType =="STUN") or (locType =="FEAR") or (locType =="CHARM") or (locType =="CONFUSE") or (locType =="POSSESS") or (locType =="FEAR_MECHANIC") or (locType =="FEAR") then
+   Type = "CC"; print("EasyCC Discovered New CC " ..spell);
+  elseif locType == "DISARM" then
+   Type = "Disarm"; print("EasyCC Discovered New Disarm " ..spell);
+  elseif (locType == "PACIFYSILENCE") or (locType =="SILENCE") then
+   Type = "Silence"; print("EasyCC Discovered New Silence " ..spell);
+  elseif locType == "SCHOOL_INTERRUPT" then
+    Type = "Interrupt"; print("EasyCC Discovered New Interrupt " ..spell);
+  elseif locType == "ROOT" then
+    Type = "Root"; print("EasyCC Discovered New Root " ..spell);
+  else
+    Type = "Other"; print("EasyCC Discovered New Other " ..spell); --May Not Want to Include this based on Retail Interactions
+  end
+  spellIds[spellID] = Type; EasyCCDB.spellEnabled[spellID] = true
+  tblinsert(EasyCCDB.customSpellIds, {spellID, Type, instanceType, nil, name.."\n"..ZoneName, "Discovered", #L.spells})
+  tblinsert(L.spells[#L.spells][tabsIndex[Type]], {spellID, Type, nil, instanceType, name.."\n"..ZoneName, "Discovered", #L.spells})
+  L.Spells:UpdateTab(#L.spells)
+end
+
+
 function EasyCC:PlayerAura(unit)
+	if not EasyCCDB.LossOfControl then return end
 
   local priority = EasyCCDB.priority
   local enabled = EasyCCDB.spellEnabled
   local durationTime = EasyCCDB.durationTime
+  local customString = EasyCCDB.customString
   local maxPriority = 1
   local maxExpirationTime = 0
-  local Icon, Duration, DurationTime, Text
+  local Unique = 0
+  local Icon, Duration, DurationTime, Text, Spell
 
   for i = 1, 40 do
     local name, icon, count, _, duration, expirationTime, source, _, _, spellId = UnitAura(unit, i, "HARMFUL")
@@ -1874,14 +1945,16 @@ function EasyCC:PlayerAura(unit)
   			Duration = duration
         DurationTime = durationShow
   			Icon = icon
-        Text = string[spellId] or string[name] or string[spellCategory]
+        if duration == 0 then Unique = spellId..0 else Unique = spellId..expirationTime end
+        Text = customString[spellId] or customString[name] or string[spellId] or defaultString[spellCategory]
   		elseif Priority > maxPriority then
   			maxPriority = Priority
   			maxExpirationTime = expirationTime
   			Duration = duration
         DurationTime = durationShow
   			Icon = icon
-        Text = customString[spellId] or string[spellId] or string[name]
+        if duration == 0 then Unique = spellId..0 else Unique = spellId..expirationTime end
+        Text = customString[spellId] or customString[name] or string[spellId] or defaultString[spellCategory]
   		end
     end
   end
@@ -1903,15 +1976,16 @@ function EasyCC:PlayerAura(unit)
         Duration = duration
         DurationTime = durationShow
         Icon = icon
-        Text = string[spellId] or string[name] or string[spellCategory]
+        if duration == 0 then Unique = spellId..0 else Unique = spellId..expirationTime end
+        Text = customString[spellId] or customString[name] or string[spellId] or defaultString[spellCategory]
       elseif Priority > maxPriority then
         maxPriority = Priority
         maxExpirationTime = expirationTime
         Duration = duration
         DurationTime = durationShow
         Icon = icon
-        Name = name
-        Text = customString[spellId] or string[spellId] or string[name]
+        if duration == 0 then Unique = spellId..0 else Unique = spellId..expirationTime end
+        Text = customString[spellId] or customString[name] or string[spellId] or defaultString[spellCategory]
       end
     end
   end
@@ -1927,130 +2001,47 @@ function EasyCC:PlayerAura(unit)
       DurationTime = durationShow
       Icon = f.InterrupticonTexture
       Text = f.Interrupttext
-    elseif Priority > maxPriority and durationShow > 0 then
+      if duration == 0 then Unique = f.InterruptspellID..0 else Unique = f.InterruptspellID..expirationTime end
+    elseif Priority > maxPriority and durationShow and durationShow > 0 then
       maxPriority = Priority
       maxExpirationTime = expirationTime
       Duration = f.Interruptduration
       DurationTime = durationShow
       Icon = f.InterrupticonTexture
       Text = f.Interrupttext
-    end
+      if duration == 0 then Unique = f.InterruptspellID..0 else Unique = f.InterruptspellID..expirationTime end
+      end
   end
 
   if DurationTime == 2 then DurationTime = true elseif DurationTime == 1 then DurationTime = false end
 
 	if (maxExpirationTime == 0) then -- no (de)buffs found
-    self.maxExpirationTime = 0
+    self.maxExpirationTime = 0; self.Unique = 0
     if f:IsShown() then
 			f:Hide()
 		end
-  elseif maxExpirationTime ~= self.maxExpirationTime then -- new debuff found
-    self.maxExpirationTime = maxExpirationTime
+  elseif maxExpirationTime ~= self.maxExpirationTime and Unique ~= self.Unique then -- new debuff found
+    self.maxExpirationTime = maxExpirationTime; self.Unique = Unique
     local StartTime = maxExpirationTime - Duration
     EasyCC:Display(Icon, StartTime, Duration, Text, DurationTime)
   end
 end
 
-function EasyCC:LossOfControl(data, Index)
- 	if not data then f:Hide(); f.priority = nil; f.startTime = nil; return end
-
-  local locType = data.locType;
- 	local spellID = data.spellID;
- 	local text = data.displayText;
- 	local iconTexture = data.iconTexture;
- 	local startTime = data.startTime;
- 	local timeRemaining = data.timeRemaining;
- 	local duration = data.duration;
- 	local lockoutSchool = data.lockoutSchool;
- 	local priority = data.priority;
- 	local displayType = data.displayType;
-
-  string[spellID] = customString[spellID] or text
-
-	if not spellIds[spellID] then EasyCC:NewSpell(spellID, locType, lockoutSchool, duration) end --Need to filter out deleted spells fron DB or will keep finding same spell thats been deleted
-	if EasyCCDB.LossOfControl and EasyCCDB.spellEnabled[spellID] and ((not f.priority or (priority > f.priority or priority == f.priority )) or not f:IsShown()) and (not f.startTime or startTime ~= f.startTime) then
-  	if displayType ~= DISPLAY_TYPE_NONE then
-      if (locType == "STUN_MECHANIC") or (locType =="PACIFY") or (locType =="STUN") or (locType =="FEAR") or (locType =="CHARM") or (locType =="CONFUSE") or (locType =="POSSESS") or (locType =="FEAR_MECHANIC") then
-				if EasyCCDB.LossOfControlFull == "2" or EasyCCDB.LossOfControlFull == 2 then
-					EasyCC:Display(iconTexture, startTime, duration, text, true)
-				elseif EasyCCDB.LossOfControlFull == "1" or EasyCCDB.LossOfControlFull == 1 then
-					EasyCC:Display(iconTexture, startTime, duration, text, false)
-				end
-			elseif locType == "DISARM" then
-				if EasyCCDB.LossOfControlDisarm  == "2" or EasyCCDB.LossOfControlDisarm == 2 then
-					EasyCC:Display(iconTexture, startTime, duration, text, true)
-				elseif EasyCCDB.LossOfControlDisarm  == "1" or EasyCCDB.LossOfControlDisarm  == 1 then
-					EasyCC:Display(iconTexture, startTime, duration, text, false)
-				end
-			elseif (locType == "PACIFYSILENCE") or (locType =="SILENCE") then
-				if EasyCCDB.LossOfControlSilence  == "2" or EasyCCDB.LossOfControlSilence  == 2 then
-					EasyCC:Display(iconTexture, startTime, duration, text, true)
-				elseif EasyCCDB.LossOfControlSilence  == "1" or EasyCCDB.LossOfControlSilence  == 1 then
-					EasyCC:Display(iconTexture, startTime, duration, text, false)
-				end
-			elseif locType == "ROOT" then
-				if EasyCCDB.LossOfControlRoot == "2" or EasyCCDB.LossOfControlRoot == 2 then
-					EasyCC:Display(iconTexture, startTime, duration, text, true)
-				elseif EasyCCDB.LossOfControlRoot == "1" or EasyCCDB.LossOfControlRoot == 1 then
-					EasyCC:Display(iconTexture, startTime, duration, text, false)
-				end
-			elseif locType == "SCHOOL_INTERRUPT" then
-
-        text = strformat("%s Locked", GetSchoolString(lockoutSchool));
-
-        if spellID then f.InterruptspellID = spellID else f.InterruptspellID = nil end
-        if iconTexture then f.InterrupticonTexture = iconTexture else f.InterrupticonTexture = nil end
-        if startTime then f.InterruptstartTime = startTime; else f.InterruptstartTime = nil end
-        if text then f.Interrupttext = text else f.Interrupttext = nil end
-        if duration then f.Interruptduration = duration else f.Interruptduration = nil end
-
-        Ctimer(duration, function() f.InterruptspellID = nil; f.InterrupticonTexture = nil; f.InterruptstartTime = nil; f.Interruptduration = nil; f.Interrupttext = nil end)
-
-				if EasyCCDB.LossOfControlInterrupt == "2" or EasyCCDB.LossOfControlInterrupt == 2 then
-					EasyCC:Display(iconTexture, startTime, duration, text, true)
-          --EasyCC:PlayerAura("player")
-				elseif EasyCCDB.LossOfControlInterrupt == "1" or EasyCCDB.LossOfControlInterrupt == 1 then
-					EasyCC:Display(iconTexture, startTime, duration, text, false)
-          --EasyCC:PlayerAura("player")
-				end
-			else
-			end
-		end
-	end
-end
-
-function EasyCC:NewSpell(spellID, locType, lockoutSchool, duration)
-  local name, instanceType, _, _, _, _, _, instanceID, _, _ = GetInstanceInfo()
-  local ZoneName = GetZoneText(); local spell = GetSpellInfo(spellID); local Type
-  if (locType == "STUN_MECHANIC") or (locType =="PACIFY") or (locType =="STUN") or (locType =="FEAR") or (locType =="CHARM") or (locType =="CONFUSE") or (locType =="POSSESS") or (locType =="FEAR_MECHANIC") or (locType =="FEAR") then
-   Type = "CC"; print("EasyCC Discovered New CC " ..spell);
-  elseif locType == "DISARM" then
-   Type = "Disarm"; print("EasyCC Discovered New Disarm " ..spell);
-  elseif (locType == "PACIFYSILENCE") or (locType =="SILENCE") then
-   Type = "Silence"; print("EasyCC Discovered New Silence " ..spell);
-  elseif locType == "SCHOOL_INTERRUPT" then
-    Type = "Interrupt"; print("EasyCC Discovered New Interrupt " ..spell);
-  elseif locType == "ROOT" then
-    Type = "Root"; print("EasyCC Discovered New Root " ..spell);
-  else
-    Type = "Other"; print("EasyCC Discovered New Other " ..spell);
-  end
-  spellIds[spellID] = Type; EasyCCDB.spellEnabled[spellID]= true
-  tblinsert(EasyCCDB.customSpellIds, {spellID, Type, instanceType, name.."\n"..ZoneName, "Discovered", #L.spells})
-  tblinsert(L.spells[#L.spells][tabsIndex[Type]], {spellID, Type, instanceType, name.."\n"..ZoneName, "Discovered", #L.spells})
-  L.Spells:UpdateTab(#L.spells)
-end
-
-
 function EasyCC:Display(icon, startTime, duration, string, durationDisplay)
-	if self.test then f.displayTime = duration; f.startTime = GetTime() elseif durationDisplay then f.displayTime = duration; f.startTime = startTime else f.displayTime = fadeTime; f.startTime = startTime end
+	if self.test then
+    f.displayTime = duration; f.startTime = GetTime()
+  elseif durationDisplay then
+    f.displayTime = duration; f.startTime = startTime
+  else
+    f.displayTime = fadeTime; f.startTime = startTime
+  end
 	if string then
 		f.Ltext:SetText(string)
 	end
 	if icon then --icon control here
 		f.Icon.texture:SetTexture(icon)
 	else
-		f.Icon.texture:SetTexture(132219)
+		f.Icon.texture:SetTexture(136235)
 	end
 	if duration and duration ~= 0 then --duration control here
     f.TimeSinceLastUpdate = 0
@@ -2063,7 +2054,7 @@ function EasyCC:Display(icon, startTime, duration, string, durationDisplay)
 		f.timer:Show()
 	else -- no druation
     f.TimeSinceLastUpdate = 0
-    f.displayTime = GetTime() + 1
+    if not durationDisplay then f.displayTime = fadeTime else f.displayTime = GetTime() + 1 end
 		f.Icon.cooldown:SetCooldown(GetTime(), 0)
 		f.Icon.cooldown:SetSwipeColor(0, 0, 0, 0)
 		f.Ltext:ClearAllPoints()
@@ -2072,11 +2063,9 @@ function EasyCC:Display(icon, startTime, duration, string, durationDisplay)
 	end
 	if IsAddOnLoaded("BambiUI") then
 		point, relativeTo, relativePoint, xOfs, yOfs = PartyAnchor5:GetPoint()
-		y = yOfs
-		x = 0
+		y = yOfs;	x = 0
 	else
-		y = EasyCCDB.yOfs
-		x = EasyCCDB.xOfs
+		y = EasyCCDB.yOfs; x = EasyCCDB.xOfs
 	end
 	f.barB.texture:SetWidth(f.Icon:GetWidth() + (strlen(f.Ltext:GetText()) * 21))
 	f.barU.texture:SetWidth(f.Icon:GetWidth() + (strlen(f.Ltext:GetText()) * 21))
@@ -2141,12 +2130,15 @@ function EasyCC:OnLoad()
 		f.barU = CreateFrame("Frame", "f.barU")
 		f.barU.texture = f.barU:CreateTexture(f.barU, 'BACKGROUND')
 		f.barU.texture:SetTexture("Interface\\Cooldown\\Loc-RedLine")
+
 		f.barU.texture:SetHeight(17)
 		f.barU.texture:SetParent(f)
 
 		f.barB = CreateFrame("Frame", "f.barU")
 		f.barB.texture = f.barB:CreateTexture(f.barB, 'BACKGROUND')
 		f.barB.texture:SetTexture("Interface\\Cooldown\\Loc-RedLine")
+    --f.barB.texture:SetDesaturated(1) --sets the border green
+    --f.barB.texture:SetVertexColor(0, 1, 0, 1) --sets the border green
 		f.barB.texture:SetHeight(17)
 		f.barB.texture:SetParent(f)
 		f.barB.texture:SetRotation(math.rad(180))
@@ -2157,7 +2149,10 @@ function EasyCC:OnLoad()
 		f.Icon:SetScript("OnUpdate", function(self, elapsed)
 			if f.startTime then
         local timeRemaining = f.startTime - GetTime() + (f.Icon.cooldown:GetCooldownDuration()/1000)
-        if ( timeRemaining >= 10 ) then
+        if ( timeRemaining >= 60 ) then
+           local number = strformat("%.1f", timeRemaining/60)
+           f.timer:SetText(number .." minutes")
+        elseif ( timeRemaining >= 10 ) then
           local number = strformat("%d", timeRemaining)
           f.timer:SetText(number .." seconds")
         elseif (timeRemaining < 9.95) then -- From 9.95 to 9.99 it will print 10.0 instead of 9.9
@@ -2183,6 +2178,7 @@ function EasyCC:OnLoad()
 		print("|cff00ccffEasyCC|r","|cffFF7D0A (TBC)|r",": Type \"/ecc\"")
 	end
 end
+
 
 function EasyCC:ADDON_LOADED(arg1)
 	if arg1 == addonName then
@@ -2212,9 +2208,19 @@ function EasyCC:CompileSpells(typeUpdate)
     local hash = {}
     local customSpells = {}
     local toremove = {}
+
+    for i = 1, (#spellsTable) do
+   		for l = 2, #spellsTable[i] do
+        local spellID, prio, string = unpack(spellsTable[i][l])
+        if string and not _G.EasyCCDB.customString[spellID] then
+          _G.EasyCCDB.customString[spellID] = string
+        end
+      end
+    end
+
 		--Build Custom Table for Check
-		for k, v in ipairs(EasyCCDB.customSpellIds) do
-			local spellID, prio, _, _, _, tabId  = unpack(v)
+		for k, v in ipairs(_G.EasyCCDB.customSpellIds) do
+			local spellID, prio, _, _, _, _, tabId  = unpack(v)
 			customSpells[spellID] = {spellID, prio, tabId, k}
 		end
 		--Build the Spells Table
@@ -2232,7 +2238,7 @@ function EasyCC:CompileSpells(typeUpdate)
 		for i = 1, (#spellsTable) do
    		for l = 2, #spellsTable[i] do
 				local spellID, prio = unpack(spellsTable[i][l])
-        if prio == "CC" or prio == "Interrupt" or prio == "Silence" or prio == "Root" or prio == "Disarm" or prio == "Other" then
+        if prio == "CC" or prio == "Interrupt" or prio == "Silence" or prio == "Root" or prio == "Disarm" or prio == "Immune" or prio == "Other"  or prio == "Warning"  or prio == "Snare" then
           tblinsert(spells[i][tabsIndex[prio]], ({spellID, prio}))
   				spellList[spellID] = true
         end
@@ -2290,14 +2296,14 @@ function EasyCC:CompileSpells(typeUpdate)
     tblremove(spells[i][l], x - r)
     end
 	  	--ReAdd all dbCustom Spells to spells
-			for k,v in ipairs(EasyCCDB.customSpellIds) do
-				local spellID, prio, instanceType, zone, customname, row, position  = unpack(v)
+			for k, v in ipairs(_G.EasyCCDB.customSpellIds) do
+				local spellID, prio, string, instanceType, zone, customname, tab = unpack(v)
 				if prio ~= "Delete" then
-          if customname == "Discovered" then row = #spells end
+          if customname == "Discovered" then tab = #spells end
 					if position then
-          	tblinsert(spells[row][position], 1, v)
+          	tblinsert(spells[tab][position], 1, v)
 					else
-            tblinsert(spells[row][tabsIndex[prio]], 1, v) --v[7]: Category to enter spell / v[8]: Tab to update / v[9]: Table
+            tblinsert(spells[tab][tabsIndex[prio]], 1, v) --v[7]: Category to enter spell / v[8]: Tab to update / v[9]: Table
 					end
 				end
 			end
@@ -2318,21 +2324,21 @@ function EasyCC:CompileSpells(typeUpdate)
 			end
 		end
     if EasyCCDB.LossOfControl then SetCVar("lossOfControl", 1) else SetCVar("lossOfControl", 0) end
-    if EasyCCDB.LossOfControlInterrupt == "2" then SetCVar("lossOfControlInterrupt", 2) elseif EasyCCDB.LossOfControlInterrupt == "1" then SetCVar("lossOfControlInterrupt", 1) else SetCVar("lossOfControlInterrupt", 0) end
-    if EasyCCDB.LossOfControlFull == "2" then SetCVar("lossOfControlFull", 2) elseif EasyCCDB.LossOfControlFull == "1" then SetCVar("lossOfControlFull", 1) else SetCVar("lossOfControlFull", 0) end
-    if EasyCCDB.LossOfControlSilence == "2" then SetCVar("lossOfControlSilence", 2) elseif EasyCCDB.LossOfControlSilence == "1" then SetCVar("lossOfControlSilence", 1) else SetCVar("lossOfControlSilence", 0) end
-    if EasyCCDB.LossOfControlDisarm == "2" then SetCVar("lossOfControlDisarm", 2) elseif EasyCCDB.LossOfControlDisarm == "1" then SetCVar("lossOfControlDisarm", 1) else SetCVar("lossOfControlDisarm", 0) end
-    if EasyCCDB.LossOfControlRoot == "2" then SetCVar("lossOfControlRoot", 2) elseif EasyCCDB.LossOfControlRoot == "1" then SetCVar("lossOfControlRoot", 1) else SetCVar("lossOfControlRoot", 0) end
+    if EasyCCDB.durationTime["CC"] == 2 then SetCVar("lossOfControlFull", 2) elseif EasyCCDB.durationTime["CC"] == 1 then SetCVar("lossOfControlFull", 1) else SetCVar("lossOfControlFull", 0) end
+    if EasyCCDB.durationTime["Silence"] == 2 then SetCVar("lossOfControlSilence", 2) elseif EasyCCDB.durationTime["Silence"] == 1 then SetCVar("lossOfControlSilence", 1) else SetCVar("lossOfControlSilence", 0) end
+    if EasyCCDB.durationTime["Interrupt"] == 2 then SetCVar("lossOfControlInterrupt", 2) elseif EasyCCDB.durationTime["Interrupt"] == 1 then SetCVar("lossOfControlInterrupt", 1) else SetCVar("lossOfControlInterrupt", 0) end
+    if EasyCCDB.durationTime["Disarm"] == 2 then SetCVar("lossOfControlDisarm", 2) elseif EasyCCDB.durationTime["Disarm"] == 1 then SetCVar("lossOfControlDisarm", 1) else SetCVar("lossOfControlDisarm", 0) end
+    if EasyCCDB.durationTime["Root"] == 2 then SetCVar("lossOfControlRoot", 2) elseif EasyCCDB.durationTime["Root"]  == 1 then SetCVar("lossOfControlRoot", 1) else SetCVar("lossOfControlRoot", 0) end
 end
 
 
 local teststring = {"Holy Locked", "Polymorph", "Shadow Locked", "Stunned", "Feared"}
 local mytime = {30, 25, 30, 15, 25, 20, 30}
 
+
 function EasyCC:toggletest()
 	if not self.test then
 		self.test = true
-		print("|cff00ccffEasyCC|r","|cffFF7D0A (TBC)|r",": Test Mode On")
 		local string = teststring[ math.random( #teststring )]
     local keys = {} -- for random icon sillyness
     for k in pairs(spellIds) do
@@ -2343,22 +2349,21 @@ function EasyCC:toggletest()
 		f:SetMovable(true)
 		f:RegisterForDrag("LeftButton", "RightButton")
 		f:EnableMouse(true)
+		print("|cff00ccffEasyCC|r","|cffFF7D0A (TBC)|r",": Test Mode On")
 	else
 		self.test = nil
-		f.TimeSinceLastUpdate = 0
-		if f and f:IsShown() then f:Hide() end
 		f:EnableMouse(false)
 		f:RegisterForDrag()
 		f:SetMovable(false)
-		local frame = f
-		frame.point, frame.anchor, frame.relativePoint, frame.x, frame.y = f:GetPoint()
-    EasyCCDB.yOfs = frame.y
-    EasyCCDB.xOfs = frame.x
+    f.TimeSinceLastUpdate = 0
+    if f and f:IsShown() then f:Hide() end
+		f.point, f.anchor, f.relativePoint, f.x, f.y = f:GetPoint()
+    EasyCCDB.yOfs = f.y; EasyCCDB.xOfs = f.x
 		print("|cff00ccffEasyCC|r","|cffFF7D0A (TBC)|r",": Test Mode Off")
 	end
 end
 
-
+---------------------------------------------------------------------------------------------------------------
 
 local O = addonName .. "OptionsPanel"
 
@@ -2390,9 +2395,7 @@ _G[O.."Spells"]:SetText("Spells")
 Spells:SetHeight(28)
 Spells:SetWidth(100)
 Spells:SetScale(1)
-Spells:SetScript("OnClick", function(self)
-L.Spells:Toggle()
-end)
+Spells:SetScript("OnClick", function(self) L.Spells:Toggle() end)
 Spells:SetPoint("LEFT", title, "RIGHT", 10, 3)
 
 local BambiText = OptionsPanel:CreateFontString(nil, "ARTWORK", "GameFontNormal")
@@ -2435,17 +2438,15 @@ Scale:SetWidth(200)
 	EasyCCDB.Scale = ("%.2f"):format(value)-- the real alpha value
 end)
 
-
 local LossOfControlFull
 LossOfControlFull = CreateSlider("LossOfControlFull", OptionsPanel, 0, 2, 1, "LossOfControlFull")
 LossOfControlFull:SetScript("OnValueChanged", function(self, value)
 LossOfControlFull:SetScale(1)
 LossOfControlFull:SetWidth(200)
 	_G[self:GetName() .. "Text"]:SetText("LossOfControl Full".. " (" .. ("%.0f"):format(value) .. ")")
-	EasyCCDB.LossOfControlFull = ("%.0f"):format(value)-- the real alpha value
-	SetCVar("lossOfControlFull", ("%.0f"):format(value))
+  EasyCCDB.durationTime["CC"] = mathfloor(tonumber(("%.0f"):format(value)))-- the real alpha value
+	SetCVar("lossOfControlFull", mathfloor(tonumber(("%.0f"):format(value))))
 end)
-
 
 local LossOfControlSilence
 LossOfControlSilence = CreateSlider("LossOfControlSilence", OptionsPanel, 0, 2, 1, "LossOfControlSilence")
@@ -2453,8 +2454,8 @@ LossOfControlSilence:SetScript("OnValueChanged", function(self, value)
 LossOfControlSilence:SetScale(1)
 LossOfControlSilence:SetWidth(200)
 	_G[self:GetName() .. "Text"]:SetText("LossOfControl Silence" .. " (" .. ("%.0f"):format(value) .. ")")
-	EasyCCDB.LossOfControlSilence = ("%.0f"):format(value)-- the real alpha value
-	SetCVar("lossOfControlSilence", ("%.0f"):format(value))
+  EasyCCDB.durationTime["Silence"] = mathfloor(tonumber(("%.0f"):format(value)))-- the real alpha value
+	SetCVar("lossOfControlSilence", mathfloor(tonumber(("%.0f"):format(value))))
 end)
 
 local LossOfControlInterrupt
@@ -2463,8 +2464,8 @@ LossOfControlInterrupt:SetScript("OnValueChanged", function(self, value)
 LossOfControlInterrupt:SetScale(1)
 LossOfControlInterrupt:SetWidth(200)
 	_G[self:GetName() .. "Text"]:SetText("LossOfControl Interrupt" .. " (" .. ("%.0f"):format(value) .. ")")
-	EasyCCDB.LossOfControlInterrupt = ("%.0f"):format(value)-- the real alpha value
-	SetCVar("lossOfControlInterrupt", ("%.0f"):format(value))
+  EasyCCDB.durationTime["Interrupt"] = mathfloor(tonumber(("%.0f"):format(value)))-- the real alpha value
+	SetCVar("lossOfControlInterrupt", mathfloor(tonumber(("%.0f"):format(value))))
 end)
 
 local LossOfControlDisarm
@@ -2473,8 +2474,8 @@ LossOfControlDisarm:SetScript("OnValueChanged", function(self, value)
 LossOfControlDisarm:SetScale(1)
 LossOfControlDisarm:SetWidth(200)
 	_G[self:GetName() .. "Text"]:SetText("LossOfControl Disarm" .. " (" .. ("%.0f"):format(value) .. ")")
-	EasyCCDB.LossOfControlDisarm = ("%.0f"):format(value)-- the real alpha value
-	SetCVar("lossOfControlDisarm", ("%.0f"):format(value))
+  EasyCCDB.durationTime["Disarm"] = mathfloor(tonumber(("%.0f"):format(value)))-- the real alpha value
+	SetCVar("lossOfControlDisarm", mathfloor(tonumber(("%.0f"):format(value))))
 end)
 
 local LossOfControlRoot
@@ -2483,10 +2484,9 @@ LossOfControlRoot:SetScript("OnValueChanged", function(self, value)
 LossOfControlRoot:SetScale(1)
 LossOfControlRoot:SetWidth(200)
 	_G[self:GetName() .. "Text"]:SetText("LossOfControl Root" .. " (" .. ("%.0f"):format(value) .. ")")
-	EasyCCDB.LossOfControlRoot = ("%.0f"):format(value)-- the real alpha value
-	SetCVar("lossOfControlRoot", ("%.0f"):format(value))
+	EasyCCDB.durationTime["Root"] = mathfloor(tonumber(("%.0f"):format(value)))-- the real alpha value
+	SetCVar("lossOfControlRoot", mathfloor(tonumber(("%.0f"):format(value))))
 end)
-
 
 local LossOfControl
 LossOfControl = CreateFrame("CheckButton", O.."LossOfControl", OptionsPanel, "OptionsCheckButtonTemplate")
@@ -2523,10 +2523,9 @@ if LossOfControlRoot then LossOfControlRoot:SetPoint("TOPLEFT", LossOfControlDis
 
 local LoCOptions = OptionsPanel:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
 LoCOptions:SetFont("Fonts\\FRIZQT__.TTF", 12 )
-LoCOptions:SetText("LossOfControl must be enabled for any priority to work \n\n|cffff00000:|r Disables Icon Type \n1: Shows icon for a short duartion (2 Seconds) \n|cff00ff002:|r Shows icon for the full duration \n \n ")
+LoCOptions:SetText("LossOfControl must be enabled for any priority to work \n\n|cffff00000:|r Disables Icon Type \n1: Shows Icon Alert (2 Seconds) \n|cff00ff002:|r Shows Icon for the Full Duration\n \n ")
 LoCOptions:SetJustifyH("LEFT")
 LoCOptions:SetPoint("TOPLEFT", LossOfControlRoot, "TOPLEFT", 0, -30)
-
 
 -------------------------------------------------------------------------------
 OptionsPanel.default = function() -- This method will run when the player clicks "defaults"
@@ -2543,61 +2542,38 @@ OptionsPanel.default = function() -- This method will run when the player clicks
   BlizzardOptionsPanel_Slider_Enable(LossOfControlRoot)
 
   if EasyCC.test then EasyCC:toggletest() end
-
+  print("|cff00ccffEasyCC|r","|cffFF7D0A (TBC)|r",": Reset")
 end
 
 OptionsPanel.refresh = function()
 	 -- This method will run when the Interface Options frame calls its OnShow function and after defaults have been applied via the panel.default method described above.
 	LossOfControl:SetChecked(EasyCCDB.LossOfControl)
-	LossOfControlInterrupt:SetValue(EasyCCDB.LossOfControlInterrupt)
-	LossOfControlFull:SetValue(EasyCCDB.LossOfControlFull)
-	LossOfControlSilence:SetValue(EasyCCDB.LossOfControlSilence)
-	LossOfControlDisarm:SetValue(EasyCCDB.LossOfControlDisarm)
-	LossOfControlRoot:SetValue(EasyCCDB.LossOfControlRoot)
+	LossOfControlInterrupt:SetValue(EasyCCDB.durationTime["Interrupt"])
+	LossOfControlFull:SetValue(EasyCCDB.durationTime["CC"])
+	LossOfControlSilence:SetValue(EasyCCDB.durationTime["Silence"])
+	LossOfControlDisarm:SetValue(EasyCCDB.durationTime["Disarm"])
+	LossOfControlRoot:SetValue(EasyCCDB.durationTime["Root"])
 	Scale:SetValue(EasyCCDB.Scale)
 
   if EasyCC.test then Unlock:SetChecked(true) else Unlock:SetChecked(false) end
   if EasyCCDB.LossOfControl then SetCVar("lossOfControl", 1) else SetCVar("lossOfControl", 0) end
-  if EasyCCDB.LossOfControlInterrupt == "2" then SetCVar("lossOfControlInterrupt", 2) elseif EasyCCDB.LossOfControlInterrupt == "1" then SetCVar("lossOfControlInterrupt", 1) else SetCVar("lossOfControlInterrupt", 0) end
-  if EasyCCDB.LossOfControlFull == "2" then SetCVar("lossOfControlFull", 2) elseif EasyCCDB.LossOfControlFull == "1" then SetCVar("lossOfControlFull", 1) else SetCVar("lossOfControlFull", 0) end
-  if EasyCCDB.LossOfControlSilence == "2" then SetCVar("lossOfControlSilence", 2) elseif EasyCCDB.LossOfControlSilence == "1" then SetCVar("lossOfControlSilence", 1) else SetCVar("lossOfControlSilence", 0) end
-  if EasyCCDB.LossOfControlDisarm == "2" then SetCVar("lossOfControlDisarm", 2) elseif EasyCCDB.LossOfControlDisarm == "1" then SetCVar("lossOfControlDisarm", 1) else SetCVar("lossOfControlDisarm", 0) end
-  if EasyCCDB.LossOfControlRoot == "2" then SetCVar("lossOfControlRoot", 2) elseif EasyCCDB.LossOfControlRoot == "1" then SetCVar("lossOfControlRoot", 1) else SetCVar("lossOfControlRoot", 0) end
+  if EasyCCDB.durationTime["CC"] == 2 then SetCVar("lossOfControlFull", 2) elseif EasyCCDB.durationTime["CC"] == 1 then SetCVar("lossOfControlFull", 1) else SetCVar("lossOfControlFull", 0) end
+  if EasyCCDB.durationTime["Silence"] == 2 then SetCVar("lossOfControlSilence", 2) elseif EasyCCDB.durationTime["Silence"] == 1 then SetCVar("lossOfControlSilence", 1) else SetCVar("lossOfControlSilence", 0) end
+  if EasyCCDB.durationTime["Interrupt"] == 2 then SetCVar("lossOfControlInterrupt", 2) elseif EasyCCDB.durationTime["Interrupt"] == 1 then SetCVar("lossOfControlInterrupt", 1) else SetCVar("lossOfControlInterrupt", 0) end
+  if EasyCCDB.durationTime["Disarm"] == 2 then SetCVar("lossOfControlDisarm", 2) elseif EasyCCDB.durationTime["Disarm"] == 1 then SetCVar("lossOfControlDisarm", 1) else SetCVar("lossOfControlDisarm", 0) end
+  if EasyCCDB.durationTime["Root"] == 2 then SetCVar("lossOfControlRoot", 2) elseif EasyCCDB.durationTime["Root"]  == 1 then SetCVar("lossOfControlRoot", 1) else SetCVar("lossOfControlRoot", 0) end
 
 end
 
 InterfaceOptions_AddCategory(OptionsPanel)
 
-
+-------------------------------------------------------------------------------
 SLASH_ECC1 = "/ecc"
 
 local SlashCmd = {}
-function SlashCmd:test()
-	EasyCC:toggletest()
-end
 
 function SlashCmd:reset()
-	print("|cff00ccffEasyCC|r","|cffFF7D0A (TBC)|r",": Reset")
-
-  L.Spells:ResetAllSpellList()
-  _G.EasyCCDB = nil
-  L.Spells:WipeAll()
-  EasyCC:ADDON_LOADED(addonName)
-  L.Spells:UpdateAll()
-
-  BlizzardOptionsPanel_Slider_Enable(LossOfControlInterrupt)
-  BlizzardOptionsPanel_Slider_Enable(LossOfControlFull)
-  BlizzardOptionsPanel_Slider_Enable(LossOfControlSilence)
-  BlizzardOptionsPanel_Slider_Enable(LossOfControlDisarm)
-  BlizzardOptionsPanel_Slider_Enable(LossOfControlRoot)
-
-  LossOfControl:SetChecked(EasyCCDB.LossOfControl)
-  LossOfControlInterrupt:SetValue(EasyCCDB.LossOfControlInterrupt)
-  LossOfControlFull:SetValue(EasyCCDB.LossOfControlFull)
-  LossOfControlSilence:SetValue(EasyCCDB.LossOfControlSilence)
-  LossOfControlDisarm:SetValue(EasyCCDB.LossOfControlDisarm)
-  LossOfControlRoot:SetValue(EasyCCDB.LossOfControlRoot)
-  if EasyCC.test then EasyCC:toggletest() end
+  OptionsPanel.default()
 end
 
 SlashCmdList["ECC"] = function(cmd)
@@ -2608,6 +2584,7 @@ SlashCmdList["ECC"] = function(cmd)
 	if SlashCmd[args[1]] then
 		SlashCmd[args[1]](unpack(args))
 	else
-		print("|cff00ccffEasyCC|r","|cffFF7D0A (TBC)|r",": Type \"/ecc test\" for testing or /ecc reset.")
+		print("|cff00ccffEasyCC|r","|cffFF7D0A (TBC)|r",": Type \"/ecc reset\" to reset all settings")
+    InterfaceOptionsFrame_OpenToCategory(OptionsPanel)
 	end
 end
