@@ -34,6 +34,7 @@ local width = 48
 local fadeTime = 2-- Fade Timer
 
 local spellsTable = {
+
 {"Hunter", --TAB
   {24394  , "CC"},				-- Intimidation (talent)
   {19410  , "CC"},				-- Improved Concussive Shot (talent)
@@ -63,6 +64,16 @@ local spellsTable = {
   {4168   , "Root"},				-- Web II
   {4169   , "Root"},				-- Web III
   {25999  , "Root"},				-- Boar Charge
+
+  {2974   , "Snare"},			-- Wing Clip (rank 1)
+  {14267  , "Snare"},			-- Wing Clip (rank 2)
+  {14268  , "Snare"},			-- Wing Clip (rank 3)
+  {5116   , "Snare"},			-- Concussive Shot
+  {15571  , "Snare"},			-- Dazed (Aspect of the Cheetah and Aspect of the Pack)
+  {13809  , "Snare"},			-- Frost Trap
+  {13810  , "Snare"},			-- Frost Trap Aura
+  {35101  , "Snare"},			-- Concussive Barrage (talent)
+
 },
 {"Shaman",
   {39796  , "CC"},				-- Stoneclaw Stun (Stoneclaw Totem)
@@ -75,6 +86,14 @@ local spellsTable = {
   {8045   , "Interrupt"},		-- Earth Shock (rank 3) (Shaman)
   {8044   , "Interrupt"},		-- Earth Shock (rank 2) (Shaman)
   {8042   , "Interrupt"},		-- Earth Shock (rank 1) (Shaman)
+
+  {8056   , "Snare"},			-- Frost Shock (rank 1)
+  {8058   , "Snare"},			-- Frost Shock (rank 2)
+  {10472  , "Snare"},			-- Frost Shock (rank 3)
+  {10473  , "Snare"},			-- Frost Shock (rank 4)
+  {25464  , "Snare"},			-- Frost Shock (rank 5)
+  {3600   , "Snare"},			-- Earthbind (Earthbind Totem)
+
 },
 {"Druid",
   {9005   , "CC"},				-- Pounce (rank 1)
@@ -110,6 +129,7 @@ local spellsTable = {
   {27010  , "Root"},				-- Entangling Roots (rank 6) (Nature's Grasp talent)
   {19675  , "Root"},				-- Feral Charge Effect (Feral Charge talent)
   {45334  , "Root"},				-- Feral Charge Effect (Feral Charge talent)
+
 },
 {"Mage",
   {118    , "CC"},				-- Polymorph (rank 1)
@@ -136,6 +156,40 @@ local spellsTable = {
   {12494  , "Root"},				-- Frostbite (talent)
   {33395  , "Root"},				-- Freeze
 
+  {12484  , "Snare"},			-- Chilled (rank 1) (Improved Blizzard talent)
+  {12485  , "Snare"},			-- Chilled (rank 2) (Improved Blizzard talent)
+  {12486  , "Snare"},			-- Chilled (rank 3) (Improved Blizzard talent)
+  {120    , "Snare"},			-- Cone of Cold (rank 1)
+  {8492   , "Snare"},			-- Cone of Cold (rank 2)
+  {10159  , "Snare"},			-- Cone of Cold (rank 3)
+  {10160  , "Snare"},			-- Cone of Cold (rank 4)
+  {10161  , "Snare"},			-- Cone of Cold (rank 5)
+  {27087  , "Snare"},			-- Cone of Cold (rank 6)
+  {116    , "Snare"},			-- Frostbolt (rank 1)
+  {205    , "Snare"},			-- Frostbolt (rank 2)
+  {837    , "Snare"},			-- Frostbolt (rank 3)
+  {7322   , "Snare"},			-- Frostbolt (rank 4)
+  {8406   , "Snare"},			-- Frostbolt (rank 5)
+  {8407   , "Snare"},			-- Frostbolt (rank 6)
+  {8408   , "Snare"},			-- Frostbolt (rank 7)
+  {10179  , "Snare"},			-- Frostbolt (rank 8)
+  {10180  , "Snare"},			-- Frostbolt (rank 9)
+  {10181  , "Snare"},			-- Frostbolt (rank 10)
+  {25304  , "Snare"},			-- Frostbolt (rank 11)
+  {27071  , "Snare"},			-- Frostbolt (rank 12)
+  {27072  , "Snare"},			-- Frostbolt (rank 13)
+  {38697  , "Snare"},			-- Frostbolt (rank 14)
+  --{6136   , "Snare"},			-- Chilled (Frost Armor)
+  --{7321   , "Snare"},			-- Chilled (Ice Armor)
+  {11113  , "Snare"},			-- Blast Wave (talent) (rank 1)
+  {13018  , "Snare"},			-- Blast Wave (talent) (rank 2)
+  {13019  , "Snare"},			-- Blast Wave (talent) (rank 3)
+  {13020  , "Snare"},			-- Blast Wave (talent) (rank 4)
+  {13021  , "Snare"},			-- Blast Wave (talent) (rank 5)
+  {27133  , "Snare"},			-- Blast Wave (talent) (rank 6)
+  {33933  , "Snare"},			-- Blast Wave (talent) (rank 7)
+  {31589  , "Snare"},			-- Slow (talent)
+
 },
 {"Palladin",
   {853    , "CC"},				-- Hammer of Justice (rank 1)
@@ -149,6 +203,15 @@ local spellsTable = {
   {20066  , "CC"},				-- Repentance (talent)
 
   {18498  , "Silence"},		-- Shield Bash - Silenced (Improved Shield Bash talent)
+
+  {1022  , "Other", "BOP"},	-- BOP (rank 1)
+  {5599  , "Other",	"BOP"}, -- BOP (rank 2)
+  {10278 , "Other",	"BOP"}, -- BOP (rank 3)
+
+  {31935  , "Snare"},			-- Avenger's Shield (rank 1) (talent)
+  {32699  , "Snare"},			-- Avenger's Shield (rank 2) (talent)
+  {32700  , "Snare"},			-- Avenger's Shield (rank 3) (talent)
+
 },
 {"Priest",
   {605    , "CC"},				-- Mind Control (rank 1)
@@ -171,6 +234,15 @@ local spellsTable = {
   {44045  , "Root"},				-- Chastise (rank 4)
   {44046  , "Root"},				-- Chastise (rank 5)
   {44047  , "Root"},				-- Chastise (rank 6)
+
+  {15407  , "Snare"},			-- Mind Flay (talent) (rank 1)
+  {17311  , "Snare"},			-- Mind Flay (talent) (rank 2)
+  {17312  , "Snare"},			-- Mind Flay (talent) (rank 3)
+  {17313  , "Snare"},			-- Mind Flay (talent) (rank 4)
+  {17314  , "Snare"},			-- Mind Flay (talent) (rank 5)
+  {18807  , "Snare"},			-- Mind Flay (talent) (rank 6)
+  {25387  , "Snare"},			-- Mind Flay (talent) (rank 7)
+
 },
 {"Rogue",
   {2094   , "CC"},				-- Blind
@@ -190,7 +262,7 @@ local spellsTable = {
 
   {1330   , "Silence"},		-- Garrote - Silence
 
-  {26679 , "Interrupt"},		-- Deadly Throw (Gladiator's Leather Gloves) (rank 1) (Rogue)
+  --{26679 , "Interrupt"},		-- Deadly Throw (Gladiator's Leather Gloves) (rank 1) (Rogue)
   {38768 , "Interrupt"},		-- Kick (rank 5) (Rogue)
   {1769  , "Interrupt"},		-- Kick (rank 4) (Rogue)
   {1768  , "Interrupt"},		-- Kick (rank 3) (Rogue)
@@ -198,6 +270,12 @@ local spellsTable = {
   {1766  , "Interrupt"},		-- Kick (rank 1) (Rogue)
 
   {14251  , "Disarm"},			-- Riposte (talent)
+
+  {3409   , "Snare"},			-- Crippling Poison (rank 1)
+  {11201  , "Snare"},			-- Crippling Poison (rank 2)
+  {26679  , "Snare"},			-- Deadly Throw (rank 1)
+  {31125  , "Snare"},			-- Dazed (Blade Twisting) (talent)
+
 },
 {"Warlock",
   {710    , "CC"},				-- Banish (rank 1)
@@ -229,6 +307,11 @@ local spellsTable = {
 
   {19647  , "Interrupt"},		-- Spell Lock (felhunter) (rank 2) (Warlock)
   {19244  , "Interrupt"},		-- Spell Lock (felhunter) (rank 1) (Warlock)
+
+  {18223  , "Snare"},			-- Curse of Exhaustion (talent)
+  {18118  , "Snare"},			-- Aftermath (talent)
+  {89     , "Snare"},		-- Cripple (Doomguard)
+
 },
 {"Warrior",
   {7922   , "CC"},				-- Charge (rank 1/2/3)
@@ -252,6 +335,7 @@ local spellsTable = {
   {23694  , "Root"},				-- Improved Hamstring (talent)
 
   {676    , "Disarm"},			-- Improved Hamstring (talent)
+
 },
 {"Racials",
   {20549  , "CC"},				-- War Stomp (tauren racial)
@@ -1796,7 +1880,7 @@ for i = 1, #tabs do
 end
 
 local DBdefaults = {
- version = 2.13,
+ version = 2.17,
  Scale = 1,
  xOfs = 0,
  yOfs = -30,
@@ -1807,6 +1891,11 @@ local DBdefaults = {
  spellDisabled = { },
  customSpellIds = { },
  customString = { },
+ GreenBar = {
+   [1022]  = true,	-- BOP (rank 1)
+   [5599]  = true, -- BOP (rank 2)
+   [10278] = true, -- BOP (rank 3)
+  },
  priority = {		-- higher numbers have more priority; 0 = disabled
    CC = 100,
    Interrupt = 90,
@@ -1929,7 +2018,7 @@ function EasyCC:PlayerAura(unit)
   local maxPriority = 1
   local maxExpirationTime = 0
   local Unique = 0
-  local Icon, Duration, DurationTime, Text, Spell
+  local Icon, Duration, DurationTime, Text, Spell, GreenBar
 
   for i = 1, 40 do
     local name, icon, count, _, duration, expirationTime, source, _, _, spellId = UnitAura(unit, i, "HARMFUL")
@@ -1940,9 +2029,6 @@ function EasyCC:PlayerAura(unit)
     end
 
     local spellCategory = spellIds[spellId] or spellIds[name]
-
-    if spellId == 26679 then spellCategory = "Snare" end -- fix for Deadly throw
-
     local Priority = priority[spellCategory]
     local durationShow = durationTime[spellCategory]
     if ((not disabled[spellId]) and (not disabled[name])) and durationShow and durationShow > 0 then
@@ -1951,6 +2037,7 @@ function EasyCC:PlayerAura(unit)
   			Duration = duration
         DurationTime = durationShow
   			Icon = icon
+        GreenBar = EasyCCDB.GreenBar[spellId] or EasyCCDB.GreenBar[name]
         if duration == 0 then Unique = spellId..0 else Unique = spellId..expirationTime end
         Text = customString[spellId] or customString[name] or string[spellId] or defaultString[spellCategory]
   		elseif Priority > maxPriority then
@@ -1959,6 +2046,7 @@ function EasyCC:PlayerAura(unit)
   			Duration = duration
         DurationTime = durationShow
   			Icon = icon
+        GreenBar = EasyCCDB.GreenBar[spellId] or EasyCCDB.GreenBar[name]
         if duration == 0 then Unique = spellId..0 else Unique = spellId..expirationTime end
         Text = customString[spellId] or customString[name] or string[spellId] or defaultString[spellCategory]
   		end
@@ -1982,6 +2070,7 @@ function EasyCC:PlayerAura(unit)
         Duration = duration
         DurationTime = durationShow
         Icon = icon
+        GreenBar = EasyCCDB.GreenBar[spellId] or EasyCCDB.GreenBar[name]
         if duration == 0 then Unique = spellId..0 else Unique = spellId..expirationTime end
         Text = customString[spellId] or customString[name] or string[spellId] or defaultString[spellCategory]
       elseif Priority > maxPriority then
@@ -1990,6 +2079,7 @@ function EasyCC:PlayerAura(unit)
         Duration = duration
         DurationTime = durationShow
         Icon = icon
+        GreenBar = EasyCCDB.GreenBar[spellId] or EasyCCDB.GreenBar[name]
         if duration == 0 then Unique = spellId..0 else Unique = spellId..expirationTime end
         Text = customString[spellId] or customString[name] or string[spellId] or defaultString[spellCategory]
       end
@@ -2024,6 +2114,7 @@ function EasyCC:PlayerAura(unit)
       DurationTime = durationShow
       Icon = f.InterrupticonTexture
       Text = f.Interrupttext
+      GreenBar = EasyCCDB.GreenBar[f.InterruptspellID]
       if duration == 0 then Unique = f.InterruptspellID..0 else Unique = f.InterruptspellID..expirationTime end
     elseif Priority > maxPriority and durationShow and durationShow > 0 then
       maxPriority = Priority
@@ -2032,6 +2123,7 @@ function EasyCC:PlayerAura(unit)
       DurationTime = durationShow
       Icon = f.InterrupticonTexture
       Text = f.Interrupttext
+      GreenBar = EasyCCDB.GreenBar[f.InterruptspellID]
       if duration == 0 then Unique = f.InterruptspellID..0 else Unique = f.InterruptspellID..expirationTime end
       end
   end
@@ -2046,11 +2138,11 @@ function EasyCC:PlayerAura(unit)
   elseif maxExpirationTime ~= self.maxExpirationTime and Unique ~= self.Unique then -- new debuff found
     self.maxExpirationTime = maxExpirationTime; self.Unique = Unique
     local StartTime = maxExpirationTime - Duration
-    EasyCC:Display(Icon, StartTime, Duration, Text, DurationTime)
+    EasyCC:Display(Icon, StartTime, Duration, Text, DurationTime, GreenBar)
   end
 end
 
-function EasyCC:Display(icon, startTime, duration, string, durationDisplay)
+function EasyCC:Display(icon, startTime, duration, string, durationDisplay, greenBar)
 	if self.test then
     f.displayTime = duration; f.startTime = GetTime()
   elseif durationDisplay then
@@ -2088,14 +2180,32 @@ function EasyCC:Display(icon, startTime, duration, string, durationDisplay)
 		point, relativeTo, relativePoint, xOfs, yOfs = PartyAnchor5:GetPoint()
 		EasyCCDB.point = "CENTER"; EasyCCDB.relativePoint = "CENTER"; EasyCCDB.yOfs = yOfs; EasyCCDB.xOfs = 0;
   end
-	f.barB.texture:SetWidth(f.Icon:GetWidth() + (strlen(f.Ltext:GetText()) * 21))
-	f.barU.texture:SetWidth(f.Icon:GetWidth() + (strlen(f.Ltext:GetText()) * 21))
+  if greenBar then
+    f.barB.texture:SetDesaturated(1) --sets the border green
+    f.barB.texture:SetVertexColor(0, 1, 0, 1) --sets the border green
+    f.barU.texture:SetDesaturated(1) --sets the border green
+    f.barU.texture:SetVertexColor(0, 1, 0, 1) --sets the border green
+  else
+    f.barB.texture:SetDesaturated(nil) --sets the border green
+    f.barB.texture:SetVertexColor(1, 1, 1, 1) --sets the border green
+    f.barU.texture:SetDesaturated(nil) --sets the border green
+    f.barU.texture:SetVertexColor(1, 1, 1, 1) --sets the border green
+  end
+  if strlen(f.Ltext:GetText()) > 7 then
+  	f.barB.texture:SetWidth(f.Icon:GetWidth() + (strlen(f.Ltext:GetText()) * 21))
+  	f.barU.texture:SetWidth(f.Icon:GetWidth() + (strlen(f.Ltext:GetText()) * 21))
+    f.backgroundTexture:SetWidth(f.Icon:GetWidth() + (strlen(f.Ltext:GetText()) * 16))
+  	f:SetWidth(f.Icon:GetWidth() + (strlen(f.Ltext:GetText()) * 16))
+  else
+    f.barB.texture:SetWidth(f.Icon:GetWidth() + (7 * 21))
+    f.barU.texture:SetWidth(f.Icon:GetWidth() + (7 * 21))
+    f.backgroundTexture:SetWidth(f.Icon:GetWidth() + (7 * 16))
+  	f:SetWidth(f.Icon:GetWidth() + (7 * 16))
+  end
 	f.barU.texture:ClearAllPoints()
 	f.barB.texture:ClearAllPoints()
 	f.barU.texture:SetPoint("BOTTOM", f, "TOP", 0, 4)
 	f.barB.texture:SetPoint("TOP", f, "BOTTOM", 0, -4)
-	f:SetWidth(f.Icon:GetWidth() + (strlen(f.Ltext:GetText()) * 16))
-  f.backgroundTexture:SetWidth(f.Icon:GetWidth() + (strlen(f.Ltext:GetText()) * 16))
 	f:ClearAllPoints()
   f:SetPoint(
     EasyCCDB.point or "CENTER",
@@ -2139,7 +2249,7 @@ function EasyCC:OnLoad()
     f.backgroundTexture:SetTexture("Interface\\Cooldown\\LoC-ShadowBG")
     f.backgroundTexture:SetPoint("CENTER", f, "CENTER", 0, 0)
     f.backgroundTexture:SetHeight(hieght + 8)
-    f.backgroundTexture:SetVertexColor(1, 1, 1, 0.5)
+    f.backgroundTexture:SetVertexColor(1, 1, 1, .6)
 
 		f.Icon = CreateFrame("Frame", "f.Icon")
 		f.Icon:SetHeight(hieght)
@@ -2163,14 +2273,14 @@ function EasyCC:OnLoad()
 
 		f.Ltext = f.Icon:CreateFontString(nil, "ARTWORK")
 		f.Ltext:SetFont(STANDARD_TEXT_FONT, 24, "THICKOUTLINE")
-		f.Ltext:SetTextColor(1, .8, 0, 1)
-		f.Ltext:SetJustifyH("LEFT")
 		f.Ltext:SetParent(f.Icon)
-		f.Ltext:SetJustifyH("LEFT")
+  	f.Ltext:SetJustifyH("LEFT")
+		f.Ltext:SetTextColor(1, .8, 0, 1)
 
 		f.timer = f.Icon:CreateFontString(nil, "ARTWORK")
-		f.timer:SetParent(f.Icon)
 		f.timer:SetFont(STANDARD_TEXT_FONT, 20, "OUTLINE")
+		f.timer:SetParent(f.Icon)
+
 
 		local ONUPDATE_INTERVAL = 1;
 
@@ -2184,8 +2294,6 @@ function EasyCC:OnLoad()
 		f.barB = CreateFrame("Frame", "f.barU")
 		f.barB.texture = f.barB:CreateTexture(f.barB, 'BACKGROUND')
 		f.barB.texture:SetTexture("Interface\\Cooldown\\Loc-RedLine")
-    --f.barB.texture:SetDesaturated(1) --sets the border green
-    --f.barB.texture:SetVertexColor(0, 1, 0, 1) --sets the border green
 		f.barB.texture:SetHeight(17)
 		f.barB.texture:SetParent(f)
 		f.barB.texture:SetRotation(math.rad(180))
@@ -2480,7 +2588,7 @@ Spells:SetPoint("LEFT", title, "RIGHT", 90, 3)
 
 local SpellText = OptionsPanel:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
 SpellText:SetFont("Fonts\\FRIZQT__.TTF", 11 )
-SpellText:SetText("Fully Customize Any Default Spell or Add Any Spell by Name or SpellId \n\n1: Add spells with Custom Text and Priority \n2: Delete or hide any spell in game \n3: Check out the discovered tab for spells found while playing\n \n ")
+SpellText:SetText("Fully Customize Any Default Spell or Add Any Spell by Name or SpellId \n\n1: Add spells with Custom Text and Priority \n2: Delete or hide any spell in game \n3: Change the Red Bar to Green on any Spell \n4: Check out the discovered tab for spells found while playing \n ")
 SpellText:SetJustifyH("LEFT")
 SpellText:SetPoint("TOPLEFT", Spells, "BOTTOMRIGHT", -197, -5)
 
@@ -2826,7 +2934,7 @@ OptionsPanel.default = function() -- This method will run when the player clicks
 	L.Spells:UpdateAll()
 
   if EasyCC.test then EasyCC:toggletest() end
-  print("|cff00ccffEasyCC|r","|cffFF7D0A (TBC)|r",": Reset")
+  print("|cff00ccffEasyCC|r","|cffFF7D0A (TBC)|r",": Reset (Requires Reload for Green Bar & Custom Text Settings)")
 end
 
 OptionsPanel.refresh = function()

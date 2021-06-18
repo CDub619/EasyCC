@@ -84,7 +84,7 @@ local IsShown = IsShown
 local IsVisible = IsVisible
 local playerGUID
 local print = print
-local contents = {};
+local contents = { };
 --------------------------------------
 -- Defaults (usually a database!)
 --------------------------------------
@@ -228,6 +228,20 @@ local function makeAndShowSpellTTPVE(self)
 		GameTooltip:SetText(self.spellID, 1, 1, 1, true)
 		GameTooltip:AddLine("This Spell Uses the Name not SpellID.", 1.0, 0.82, 0.0, true);
 	end
+	if (self:GetChecked()) then
+		GameTooltip:AddDoubleLine("|cff66FF00Enabled")
+	else
+		GameTooltip:AddDoubleLine("|cffFF0000Disabled")
+	end
+	GameTooltip:Show()
+end
+
+local function makeGreenBar(self)
+	local text
+	if type(self.spellID) == "number" then text = GetSpellInfo(self.spellID) else text = self.spellID end
+	GameTooltip:SetOwner (self, "ANCHOR_RIGHT")
+	GameTooltip:SetText(text, 1, 1, 1, true)
+	GameTooltip:AddLine("Set the Red Bar to Green.", 1.0, 0.82, 0.0, true);
 	if (self:GetChecked()) then
 		GameTooltip:AddDoubleLine("|cff66FF00Enabled")
 	else
@@ -565,7 +579,7 @@ local function CreateMenu()
 	UISpells = CreateFrame("Frame", "EasyCCSpells", UIParent, "UIPanelDialogTemplate");
 	local hex = select(4, GetThemeColor());
 	local BambiTag = string.format("|cff%s%s|r", hex:upper(), "By Bambi");
-	UISpells.Title:SetText('EasyCC PVE Spells Config '..BambiTag)
+	UISpells.Title:SetText('EasyCC Spells Config '..BambiTag)
 	UISpells:SetFrameStrata("DIALOG");
 	UISpells:SetFrameLevel(10);
 	UISpells:EnableMouse(true);
@@ -634,6 +648,7 @@ function Spells:UpdateAllSpellList()
 	Spells:UpdateSpellList(i, true)
 	end
 end
+
 function Spells:ResetAllSpellList()
 	for i = 1, #tabs do
 	Spells:EnableAll(i)
@@ -713,9 +728,11 @@ local numberOfSpellChecksPerRow = 5
 							X = 30
 						end
 						spellCheck:SetPoint("TOPLEFT", c, "TOPLEFT", X, Y);
+						--spellCheck.Green:SetPoint("TOP", spellCheck, "BOTTOM", 0, 21);
 						X = X+200
 					else
 						spellCheck:SetPoint("TOPLEFT", c, "TOPLEFT", 30, -10);
+						--spellCheck.Green:SetPoint("TOP", spellCheck, "BOTTOM", 0, 21);
 					end
 					if typeUpdate then
 						spellCheck.icon = _G[spellCheck:GetName().."Icon"]
@@ -768,22 +785,22 @@ local numberOfSpellChecksPerRow = 5
 					spellCheck:Show()
 				else
 					spellCheck = CreateFrame("CheckButton", c:GetName().."spellCheck"..spellID, c, "UICheckButtonTemplate");
-					--spellCheck.Green = CreateFrame("CheckButton", c:GetName().."spellCheck.Green"..spellID, c, "UICheckButtonTemplate");
+					spellCheck.Green = CreateFrame("CheckButton", spellCheck:GetName().."spellCheckGreen"..spellID, spellCheck, "UICheckButtonTemplate");
 					if (previousSpellID) then
 						if (spellCount % numberOfSpellChecksPerRow == 0) then
 							Y = Y-40
 							X = 30
 						end
 						spellCheck:SetPoint("TOPLEFT", c, "TOPLEFT", X, Y);
-					--spellCheck.Green:SetPoint("TOP", spellCheck, "BOTTOM", 0, 21);
+						spellCheck.Green:SetPoint("TOP", spellCheck, "BOTTOM", 0, 21);
 						X = X+200
 					else
 						spellCheck:SetPoint("TOPLEFT", c, "TOPLEFT", 30, -10);
-						--spellCheck.Green:SetPoint("TOP", spellCheck, "BOTTOM", 0, 21);
+						spellCheck.Green:SetPoint("TOP", spellCheck, "BOTTOM", 0, 21);
 					end
 					spellCheck:Show()
-					--spellCheck.Green:SetScale(.4)
-					--spellCheck.Green:Show()
+					spellCheck.Green:SetScale(.4)
+					spellCheck.Green:Show()
 
 					spellCheck.icon = CreateFrame("Button", spellCheck:GetName().."Icon", spellCheck, "ActionButtonTemplate")
 					spellCheck.icon:Disable()
@@ -874,11 +891,12 @@ local numberOfSpellChecksPerRow = 5
 					dropdown:SetPoint("LEFT", spellCheck.text, "RIGHT", -10,0)
 					dropdown:SetScale(.55)
 					spellCheck.spellID = spellID
+					spellCheck.Green.spellID = spellID
 					if _G.EasyCCDB.spellDisabled[spellCheck.spellID] then spellCheck:SetChecked(false) else spellCheck:SetChecked(true) end    --Error on 1st ADDON_LOADED
 					spellCheck:SetScript("OnClick",
 						function()
 						 GameTooltip:Hide()
-						 if not spellCheck:GetChecked() then _G.EasyCCDB.spellDisabled[spellCheck.spellID] = true end
+						 if not spellCheck:GetChecked() then _G.EasyCCDB.spellDisabled[spellCheck.spellID] = true else _G.EasyCCDB.spellDisabled[spellCheck.spellID] = nil end
 						 makeAndShowSpellTTPVE(spellCheck)
 						end
 					);
@@ -888,6 +906,21 @@ local numberOfSpellChecksPerRow = 5
 					spellCheck:SetScript("OnLeave", function(self)
 						GameTooltip:Hide()
 					end)
+					if _G.EasyCCDB.GreenBar[spellCheck.Green.spellID] then spellCheck.Green:SetChecked(true) else spellCheck.Green:SetChecked(false) end
+					spellCheck.Green:SetScript("OnClick",
+						function()
+						 GameTooltip:Hide()
+						 if spellCheck.Green:GetChecked() then _G.EasyCCDB.GreenBar[spellCheck.Green.spellID] = true else _G.EasyCCDB.GreenBar[spellCheck.Green.spellID] = nil end
+						  makeGreenBar(spellCheck.Green)
+						end
+					);
+					spellCheck.Green:SetScript("OnEnter", function(self)
+							 makeGreenBar(self)
+					end)
+					spellCheck.Green:SetScript("OnLeave", function(self)
+						GameTooltip:Hide()
+					end)
+
 				end
 				previousSpellID = spellID
 				spellCount = spellCount + 1
