@@ -91,8 +91,8 @@ local spellsTable = {
   {33786  , "CC"},				-- Cyclone
   {16922  , "CC"},				-- Starfire Stun (Improved Starfire talent)
 
-  {19675  , "Interrupt"},		-- Feral Charge (Druid)
-  {22570  , "Interrupt"},		-- Maim (Gladiator's Dragonhide Gloves) (rank 1) (Druid)
+  --{19675  , "Interrupt"},		-- Feral Charge (Druid)
+  --{22570  , "Interrupt"},		-- Maim (Brutal Gladiator's Dragonhide Gloves) (rank 1) (Druid)
 
   {339    , "Root"},				-- Entangling Roots (rank 1)
   {1062   , "Root"},				-- Entangling Roots (rank 2)
@@ -190,12 +190,12 @@ local spellsTable = {
 
   {1330   , "Silence"},		-- Garrote - Silence
 
-  {26679, "Interrupt"},		-- Deadly Throw (Gladiator's Leather Gloves) (rank 1) (Rogue)
-  {38768, "Interrupt"},		-- Kick (rank 5) (Rogue)
-  {1769, "Interrupt"},		-- Kick (rank 4) (Rogue)
-  {1768, "Interrupt"},		-- Kick (rank 3) (Rogue)
-  {1767, "Interrupt"},		-- Kick (rank 2) (Rogue)
-  {1766, "Interrupt"},		-- Kick (rank 1) (Rogue)
+  {26679 , "Interrupt"},		-- Deadly Throw (Gladiator's Leather Gloves) (rank 1) (Rogue)
+  {38768 , "Interrupt"},		-- Kick (rank 5) (Rogue)
+  {1769  , "Interrupt"},		-- Kick (rank 4) (Rogue)
+  {1768  , "Interrupt"},		-- Kick (rank 3) (Rogue)
+  {1767  , "Interrupt"},		-- Kick (rank 2) (Rogue)
+  {1766  , "Interrupt"},		-- Kick (rank 1) (Rogue)
 
   {14251  , "Disarm"},			-- Riposte (talent)
 },
@@ -227,8 +227,8 @@ local spellsTable = {
   {43523  , "Silence"},		-- Unstable Affliction
   {24259  , "Silence"},		-- Spell Lock (Felhunter)
 
-  {19647, "Interrupt"},		-- Spell Lock (felhunter) (rank 2) (Warlock)
-  {19244, "Interrupt"},		-- Spell Lock (felhunter) (rank 1) (Warlock)
+  {19647  , "Interrupt"},		-- Spell Lock (felhunter) (rank 2) (Warlock)
+  {19244  , "Interrupt"},		-- Spell Lock (felhunter) (rank 1) (Warlock)
 },
 {"Warrior",
   {7922   , "CC"},				-- Charge (rank 1/2/3)
@@ -242,14 +242,12 @@ local spellsTable = {
   {12798  , "CC"},				-- Revenge Stun (Improved Revenge talent)
   {12809  , "CC"},				-- Concussion Blow (talent)
 
-  {29704 , "Interrupt"},		-- Shield Bash (rank 4) (Warrior)
-  {1672  , "Interrupt"},		-- Shield Bash (rank 3) (Warrior)
-  {1671  , "Interrupt"},		-- Shield Bash (rank 2) (Warrior)
-  {72    , "Interrupt"},	 	-- Shield Bash (rank 1) (Warrior)
-  {6554  , "Interrupt"},		-- Pummel (rank 2) (Warrior)
-  {6552  , "Interrupt"},		-- Pummel (rank 1) (Warrior)
-  {19647 , "Interrupt"},		-- Spell Lock (felhunter) (rank 2) (Warlock)
-  {19244 , "Interrupt"},		-- Spell Lock (felhunter) (rank 1) (Warlock)
+  {29704  , "Interrupt"},		-- Shield Bash (rank 4) (Warrior)
+  {1672   , "Interrupt"},		-- Shield Bash (rank 3) (Warrior)
+  {1671   , "Interrupt"},		-- Shield Bash (rank 2) (Warrior)
+  {72     , "Interrupt"},	 	-- Shield Bash (rank 1) (Warrior)
+  {6554   , "Interrupt"},		-- Pummel (rank 2) (Warrior)
+  {6552   , "Interrupt"},		-- Pummel (rank 1) (Warrior)
 
   {23694  , "Root"},				-- Improved Hamstring (talent)
 
@@ -351,90 +349,90 @@ local spellsTable = {
   {14907  , "Root"},				-- Frost Nova
   {22645  , "Root"},				-- Frost Nova
   --------------------------------------------------------
-  --[[{2676, "Interrupt"},		-- Pulverize
-  {5133, "Interrupt"},		-- Interrupt (PT)
-  {8714, "Interrupt"},		-- Overwhelming Musk
-  {10887, "Interrupt"},		-- Crowd Pummel
-  {11972, "Interrupt"},		-- Shield Bash
-  {11978, "Interrupt"},		-- Kick
-  {12555, "Interrupt"},		-- Pummel
-  {13281, "Interrupt"},		-- Earth Shock
-  {13728, "Interrupt"},		-- Earth Shock
-  {15122, "Interrupt"},		-- Counterspell
-  {15501, "Interrupt"},		-- Earth Shock
-  {15610, "Interrupt"},		-- Kick
-  {15614, "Interrupt"},		-- Kick
-  {15615, "Interrupt"},		-- Pummel
-  {19129, "Interrupt"},		-- Massive Tremor
-  {19639, "Interrupt"},		-- Pummel
-  {19715, "Interrupt"},		-- Counterspell
-  {20537, "Interrupt"},		-- Counterspell
-  {20788, "Interrupt"},	-- Counterspell
-  {21832, "Interrupt"},		-- Boulder
-  {22885, "Interrupt"},		-- Earth Shock
-  {23114, "Interrupt"},		-- Earth Shock
-  {24685, "Interrupt"},		-- Earth Shock
-  {25025, "Interrupt"},		-- Earth Shock
-  {25788, "Interrupt"},		-- Head Butt
-  {26194, "Interrupt"},		-- Earth Shock
-  {27613, "Interrupt"},		-- Kick
-  {27620, "Interrupt"},		-- Snap Kick
-  {27814, "Interrupt"},		-- Kick
-  {27880, "Interrupt"},		-- Stun
-  {29298, "Interrupt"},		-- Dark Shriek
-  {29560, "Interrupt"},		-- Kick
-  {29586, "Interrupt"},		-- Kick
-  {29961, "Interrupt"},		-- Counterspell
-  {30849, "Interrupt"},		-- Spell Lock
-  {31596, "Interrupt"},		-- Counterspell
-  {31999, "Interrupt"},		-- Counterspell
-  {32322, "Interrupt"},		-- Dark Shriek
-  {32691, "Interrupt"},		-- Spell Shock
-  {32747, "Interrupt"},		-- Deadly Interrupt Effect
-  {32846, "Interrupt"},		-- Counter Kick
-  {32938, "Interrupt"},		-- Cry of the Dead
-  {33871, "Interrupt"},		-- Shield Bash
-  {34797, "Interrupt"},		-- Nature Shock
-  {34802, "Interrupt"},		-- Kick
-  {35039, "Interrupt"},		-- Countercharge
-  {35178, "Interrupt"},		-- Shield Bash
-  {35856, "Interrupt"},		-- Stun
-  {35920, "Interrupt"},		-- Electroshock
-  {36033, "Interrupt"},		-- Kick
-  {36138, "Interrupt"},		-- Hammer Stun
-  {36254, "Interrupt"},		-- Judgement of the Flame
-  {36841, "Interrupt"},		-- Sonic Boom
-  {36988, "Interrupt"},		-- Shield Bash
-  {37359, "Interrupt"},		-- Rush
-  {37470, "Interrupt"},		-- Counterspell
-  {38052, "Interrupt"},		-- Sonic Boom
-  {38233, "Interrupt"},		-- Shield Bash
-  {38313, "Interrupt"},		-- Pummel
-  {38625, "Interrupt"},		-- Kick
-  {38750, "Interrupt"},		-- War Stomp
-  {38897, "Interrupt"},		-- Sonic Boom
-  {39076, "Interrupt"},		-- Spell Shock
-  {39120, "Interrupt"},		-- Nature Shock
-  {40305, "Interrupt"},		-- Power Burn
-  {40547, "Interrupt"},		-- Interrupt Unholy Growth
-  {40751, "Interrupt"},		-- Disrupt Magic
-  {40864, "Interrupt"},		-- Throbbing Stun
-  {41180, "Interrupt"},		-- Shield Bash
-  {41197, "Interrupt"},		-- Shield Bash
-  {41395, "Interrupt"},		-- Kick
-  {43305, "Interrupt"},		-- Earth Shock
-  {43518, "Interrupt"},		-- Kick
-  {44418, "Interrupt"},		-- Massive Tremor
-  {44644, "Interrupt"},		-- Arcane Nova
-  {45214, "Interrupt"},		-- Ron's Test Spell #4
-  {45356, "Interrupt"},		-- Kick
-  {46036, "Interrupt"},		-- Arcane Nova
-  {46182, "Interrupt"},		-- Snap Kick
-  {47071, "Interrupt"},		-- Earth Shock
-  {47081, "Interrupt"},		-- Pummel
-  {11978, "Interrupt"},		-- Pummel (Iron Knuckles Item)
-  {13491, "Interrupt"},		-- Pummel (Iron Knuckles Item)
-  {29443, "Interrupt"},	]]	-- Counterspell (Clutch of Foresight)
+  {2676   , "Interrupt"},		-- Pulverize
+  {5133   , "Interrupt"},		-- Interrupt (PT)
+  {8714   , "Interrupt"},		-- Overwhelming Musk
+  {10887  , "Interrupt"},		-- Crowd Pummel
+  {11972  , "Interrupt"},		-- Shield Bash
+  {11978  , "Interrupt"},		-- Kick
+  {12555  , "Interrupt"},		-- Pummel
+  {13281  , "Interrupt"},		-- Earth Shock
+  {13728  , "Interrupt"},		-- Earth Shock
+  {15122  , "Interrupt"},		-- Counterspell
+  {15501  , "Interrupt"},		-- Earth Shock
+  {15610  , "Interrupt"},		-- Kick
+  {15614  , "Interrupt"},		-- Kick
+  {15615  , "Interrupt"},		-- Pummel
+  {19129  , "Interrupt"},		-- Massive Tremor
+  {19639  , "Interrupt"},		-- Pummel
+  {19715  , "Interrupt"},		-- Counterspell
+  {20537  , "Interrupt"},		-- Counterspell
+  {20788  , "Interrupt"},	-- Counterspell
+  {21832  , "Interrupt"},		-- Boulder
+  {22885  , "Interrupt"},		-- Earth Shock
+  {23114  , "Interrupt"},		-- Earth Shock
+  {24685  , "Interrupt"},		-- Earth Shock
+  {25025  , "Interrupt"},		-- Earth Shock
+  {25788  , "Interrupt"},		-- Head Butt
+  {26194  , "Interrupt"},		-- Earth Shock
+  {27613  , "Interrupt"},		-- Kick
+  --{27620  , "Interrupt"},		-- Snap Kick
+  --{27814  , "Interrupt"},		-- Kick
+  --{27880  , "Interrupt"},		-- Stun
+  {29298  , "Interrupt"},		-- Dark Shriek
+  {29560  , "Interrupt"},		-- Kick
+  {29586  , "Interrupt"},		-- Kick
+  {29961  , "Interrupt"},		-- Counterspell
+  --{30849  , "Interrupt"},		-- Spell Lock
+  {31596  , "Interrupt"},		-- Counterspell
+  {31999  , "Interrupt"},		-- Counterspell
+  {32322  , "Interrupt"},		-- Dark Shriek
+  {32691  , "Interrupt"},		-- Spell Shock
+  {32747  , "Interrupt"},		-- Deadly Interrupt Effect
+  {32846  , "Interrupt"},		-- Counter Kick
+  {32938  , "Interrupt"},		-- Cry of the Dead
+  {33871  , "Interrupt"},		-- Shield Bash
+  {34797  , "Interrupt"},		-- Nature Shock
+  {34802  , "Interrupt"},		-- Kick
+  {35039  , "Interrupt"},		-- Countercharge
+  {35178  , "Interrupt"},		-- Shield Bash
+  --{35856  , "Interrupt"},		-- Stun
+  {35920  , "Interrupt"},		-- Electroshock
+  {36033  , "Interrupt"},		-- Kick
+  --{36138  , "Interrupt"},		-- Hammer Stun
+  --{36254  , "Interrupt"},		-- Judgement of the Flame
+  {36841  , "Interrupt"},		-- Sonic Boom
+  {36988  , "Interrupt"},		-- Shield Bash
+  {37359  , "Interrupt"},		-- Rush
+  {37470  , "Interrupt"},		-- Counterspell
+  {38052  , "Interrupt"},		-- Sonic Boom
+  {38233  , "Interrupt"},		-- Shield Bash
+  {38313  , "Interrupt"},		-- Pummel
+  {38625  , "Interrupt"},		-- Kick
+  {38750  , "Interrupt"},		-- War Stomp
+  {38897  , "Interrupt"},		-- Sonic Boom
+  {39076  , "Interrupt"},		-- Spell Shock
+  {39120  , "Interrupt"},		-- Nature Shock
+  --{40305  , "Interrupt"},		-- Power Burn
+  {40547  , "Interrupt"},		-- Interrupt Unholy Growth
+  {40751  , "Interrupt"},		-- Disrupt Magic
+  --{40864  , "Interrupt"},		-- Throbbing Stun
+  {41180  , "Interrupt"},		-- Shield Bash
+  --{41197  , "Interrupt"},		-- Shield Bash
+  {41395  , "Interrupt"},		-- Kick
+  {43305  , "Interrupt"},		-- Earth Shock
+  {43518  , "Interrupt"},		-- Kick
+  {44418  , "Interrupt"},		-- Massive Tremor
+  {44644  , "Interrupt"},		-- Arcane Nova
+  {45214  , "Interrupt"},		-- Ron's Test Spell #4
+  {45356  , "Interrupt"},		-- Kick
+  {46036  , "Interrupt"},		-- Arcane Nova
+--{46182  , "Interrupt"},		-- Snap Kick
+  {47071  , "Interrupt"},		-- Earth Shock
+  {47081  , "Interrupt"},		-- Pummel
+  --{11978  , "Interrupt"},		-- Pummel (Iron Knuckles Item)
+  {13491  , "Interrupt"},		-- Pummel (Iron Knuckles Item)
+  {29443  , "Interrupt"},		-- Counterspell (Clutch of Foresight)
   {20654  , "Root"},				-- Entangling Roots
   {22800  , "Root"},				-- Entangling Roots
   {20699  , "Root"},				-- Entangling Roots
@@ -1767,7 +1765,7 @@ local spellIds = { }
 local string = { } -- used for default text storage
 
 local defaultString = {
-  ["CC"] = "Crowd Controlled",
+  ["CC"] = "LossOfControl",
   ["Silence"] = "Silenced",
   ["Interrupt"] = "Interrupted",
   ["Disarm"] = "Disarmed",
@@ -1798,12 +1796,13 @@ for i = 1, #tabs do
 end
 
 local DBdefaults = {
- version = 2.08,
+ version = 2.13,
  Scale = 1,
  xOfs = 0,
  yOfs = -30,
  point = "CENTER",
  relativePoint = "CENTER",
+ AnimateText = false,
  LossOfControl = true,
  spellDisabled = { },
  customSpellIds = { },
@@ -1941,6 +1940,9 @@ function EasyCC:PlayerAura(unit)
     end
 
     local spellCategory = spellIds[spellId] or spellIds[name]
+
+    if spellId == 26679 then spellCategory = "Snare" end -- fix for Deadly throw
+
     local Priority = priority[spellCategory]
     local durationShow = durationTime[spellCategory]
     if ((not disabled[spellId]) and (not disabled[name])) and durationShow and durationShow > 0 then
@@ -1996,6 +1998,23 @@ function EasyCC:PlayerAura(unit)
 
   if f.InterruptspellID and not disabled[f.InterruptspellID] then
     local spellCategory = spellIds[f.InterruptspellID]
+
+    if f.InterruptspellID == 26679 then spellCategory = "Interrupt" end -- fix for Deadly throw
+    if f.InterruptspellID == 22570 then spellCategory = "Interrupt" end -- fix for Maim
+    if f.InterruptspellID == 19675 then spellCategory = "Interrupt" end -- fix for Feral CHarge
+    if f.InterruptspellID == 27620 then spellCategory = "Interrupt" end -- fix for Snap Kick
+    if f.InterruptspellID == 27814 then spellCategory = "Interrupt" end -- fix for Kick
+    if f.InterruptspellID == 27880 then spellCategory = "Interrupt" end -- fix for Stun
+    if f.InterruptspellID == 30849 then spellCategory = "Interrupt" end -- fix for Spell Lock
+    if f.InterruptspellID == 35856 then spellCategory = "Interrupt" end -- fix for Stun
+    if f.InterruptspellID == 36138 then spellCategory = "Interrupt" end -- fix for Hammer Stun
+    if f.InterruptspellID == 36254 then spellCategory = "Interrupt" end -- fix for Judgement of Flame
+    if f.InterruptspellID == 11978 then spellCategory = "Interrupt" end -- fix for Kick
+    if f.InterruptspellID == 41197 then spellCategory = "Interrupt" end -- fix for Shield Bash
+    if f.InterruptspellID == 40864 then spellCategory = "Interrupt" end -- fix for Throbing Stun
+    if f.InterruptspellID == 40305 then spellCategory = "Interrupt" end -- fix for Power Burn
+    if f.InterruptspellID == 46182 then spellCategory = "Interrupt" end -- fix for Snap Kick
+
     local Priority = priority[spellCategory]
     local expirationTime = f.InterruptstartTime + f.Interruptduration
     local durationShow = durationTime[spellCategory]
@@ -2085,7 +2104,11 @@ function EasyCC:Display(icon, startTime, duration, string, durationDisplay)
     EasyCCDB.xOfs or 0,
     EasyCCDB.yOfs or 0
   )
-	f:Show()
+  f:Show()
+  if EasyCCDB.AnimateText then
+    pulseLtext:Play()
+    pulsetimer:Play()
+  end
 end
 
 function EasyCC:StopMoving()
@@ -2140,7 +2163,7 @@ function EasyCC:OnLoad()
 
 		f.Ltext = f.Icon:CreateFontString(nil, "ARTWORK")
 		f.Ltext:SetFont(STANDARD_TEXT_FONT, 24, "THICKOUTLINE")
-		f.Ltext:SetTextColor(1, .75, 0, 1)
+		f.Ltext:SetTextColor(1, .8, 0, 1)
 		f.Ltext:SetJustifyH("LEFT")
 		f.Ltext:SetParent(f.Icon)
 		f.Ltext:SetJustifyH("LEFT")
@@ -2169,6 +2192,35 @@ function EasyCC:OnLoad()
 
     f.displayTime = fadeTime -- Default Timer Display
     f.TimeSinceLastUpdate = 0
+
+    pulseLtext = f.Ltext:CreateAnimationGroup()
+    pulseLtext:SetScript("OnFinished", function() end)
+
+    local startLtext = pulseLtext:CreateAnimation("Scale")
+    startLtext:SetDuration(0.125)
+    startLtext:SetScale(1.15, 1.15)
+    startLtext:SetOrder(1)
+    startLtext:SetEndDelay(0)
+
+    local finishLtext = pulseLtext:CreateAnimation("Scale")
+    finishLtext:SetDuration(0.125)
+    finishLtext:SetScale(1, 1)
+    finishLtext:SetOrder(2)
+
+    pulsetimer = f.timer:CreateAnimationGroup()
+    pulsetimer:SetScript("OnFinished", function() end)
+
+    local starttimer = pulsetimer:CreateAnimation("Scale")
+    starttimer:SetDuration(0.125)
+    starttimer:SetScale(1.15, 1.15)
+    starttimer:SetOrder(1)
+    starttimer:SetEndDelay(0)
+
+    local finishtimer = pulsetimer:CreateAnimation("Scale")
+    finishtimer:SetDuration(0.125)
+    finishtimer:SetScale(1, 1)
+    finishtimer:SetOrder(2)
+
 		-- The number of seconds since the last update, script to set the duration to show before fading
 		f.Icon:SetScript("OnUpdate", function(self, elapsed)
 			if f.startTime then
@@ -2296,10 +2348,10 @@ function EasyCC:CompileSpells(typeUpdate)
                 if type(spellID) == "number" then
                   if GetSpellInfo(spellID) then
                     local name = GetSpellInfo(spellID) or "Unknnown"
-                    --print("|cff00ccffEasyCC|r : "..CspellID.." : "..Cprio.." ("..name..") Modified Spell ".."|cff009900Removed |r"  ..spellID.." |cff009900: |r"..prio)
+                    print("|cff00ccffEasyCC|r : "..CspellID.." : "..Cprio.." ("..name..") Modified Spell ".."|cff009900Removed |r"  ..spellID.." |cff009900: |r"..prio)
                   end
                 else
-                    --print("|cff00ccffEasyCC|r : "..CspellID.." : "..Cprio.." (not spellId) Modified Spell ".."|cff009900Removed |r"  ..spellID.." |cff009900: |r"..prio)
+                    print("|cff00ccffEasyCC|r : "..CspellID.." : "..Cprio.." (not spellId) Modified Spell ".."|cff009900Removed |r"  ..spellID.." |cff009900: |r"..prio)
                 end
                 tblinsert(toremove, {i , l, x, removed, spellID})
                 removed = removed + 1
@@ -2308,9 +2360,9 @@ function EasyCC:CompileSpells(typeUpdate)
               local HspellID, Hprio = unpack(hash[spellID])
               if type(spellID) == "number" then
                   local name = GetSpellInfo(spellID) or "Unknnown"
-                  --print("|cff00ccffEasyCC|r : "..HspellID.." : "..Hprio.." ("..name..") ".."|cffff0000Duplicate Spell in Lua |r".."|cff009900Removed |r"  ..spellID.." |cff009900: |r"..prio)
+                  print("|cff00ccffEasyCC|r : "..HspellID.." : "..Hprio.." ("..name..") ".."|cffff0000Duplicate Spell in Lua |r".."|cff009900Removed |r"  ..spellID.." |cff009900: |r"..prio)
               else
-                  --print("|cff00ccffEasyCC|r : "..HspellID.." : "..Hprio.." (not spellId) ".."|cff009900Duplicate Spell in Lua |r".."|cff009900Removed |r"  ..spellID.." |cff009900: |r"..prio)
+                  print("|cff00ccffEasyCC|r : "..HspellID.." : "..Hprio.." (not spellId) ".."|cff009900Duplicate Spell in Lua |r".."|cff009900Removed |r"  ..spellID.." |cff009900: |r"..prio)
               end
               tblinsert(toremove, {i , l, x, removed, spellID})
               removed = removed + 1
@@ -2414,7 +2466,7 @@ title:SetText(addonName)
 title:SetPoint("TOPLEFT", 15, -15)
 
 local BambiText = OptionsPanel:CreateFontString(nil, "ARTWORK", "GameFontNormal")
-BambiText:SetFont("Fonts\\MORPHEUS.ttf", 16 )
+BambiText:SetFont("Fonts\\MORPHEUS.ttf", 14 )
 BambiText:SetText("By ".."|cff00ccffBambi|r")
 BambiText:SetPoint("TOPLEFT", title, "BOTTOMLEFT", 65, 1)
 
@@ -2451,6 +2503,7 @@ end
 Unlock:SetScript("OnClick", Unlock.OnClick)
 Unlock:SetPoint("TOPLEFT",  title, "BOTTOMLEFT", 0, -22)
 
+
 local unlock = OptionsPanel:CreateFontString(nil, "ARTWORK", "GameFontHighlight")
 unlock:SetFont("Fonts\\FRIZQT__.TTF", 18 )
 unlock:SetText("Test")
@@ -2466,6 +2519,21 @@ Scale:SetWidth(200)
 	EasyCCDB.Scale = ("%.2f"):format(value)-- the real alpha value
 end)
 
+local AnimateText = CreateFrame("CheckButton", O.."Unlock", OptionsPanel, "OptionsCheckButtonTemplate")
+AnimateText:SetScript("OnClick", function(self)
+  if self:GetChecked() then
+	  EasyCCDB.AnimateText = true
+	else
+    EasyCCDB.AnimateText = false
+	end
+end)
+AnimateText:SetPoint("LEFT", Scale, "RIGHT", 25, 0)
+
+local animateText = OptionsPanel:CreateFontString(nil, "ARTWORK", "GameFontHighlight")
+animateText:SetFont("Fonts\\FRIZQT__.TTF", 12 )
+animateText:SetText("Animate Text")
+animateText:SetPoint("LEFT", AnimateText, "RIGHT", 6, 0)
+
 local LossOfControlFull
 LossOfControlFull = CreateSlider("LossOfControlFull", OptionsPanel, 0, 2, 1, "LossOfControlFull")
 LossOfControlFull:SetScript("OnValueChanged", function(self, value)
@@ -2476,16 +2544,6 @@ LossOfControlFull:SetWidth(175)
 	SetCVar("lossOfControlFull", mathfloor(tonumber(("%.0f"):format(value))))
 end)
 
-local LossOfControlSilence
-LossOfControlSilence = CreateSlider("LossOfControlSilence", OptionsPanel, 0, 2, 1, "LossOfControlSilence")
-LossOfControlSilence:SetScript("OnValueChanged", function(self, value)
-LossOfControlSilence:SetScale(1)
-LossOfControlSilence:SetWidth(175)
-	_G[self:GetName() .. "Text"]:SetText("DisplayType  Silence" .. " (" .. ("%.0f"):format(value) .. ")")
-  EasyCCDB.durationTime["Silence"] = mathfloor(tonumber(("%.0f"):format(value)))-- the real alpha value
-	SetCVar("lossOfControlSilence", mathfloor(tonumber(("%.0f"):format(value))))
-end)
-
 local LossOfControlInterrupt
 LossOfControlInterrupt = CreateSlider("LossOfControlInterrupt", OptionsPanel, 0, 2, 1, "LossOfControlInterrupt")
 LossOfControlInterrupt:SetScript("OnValueChanged", function(self, value)
@@ -2494,6 +2552,16 @@ LossOfControlInterrupt:SetWidth(175)
 	_G[self:GetName() .. "Text"]:SetText("DisplayType  Interrupt" .. " (" .. ("%.0f"):format(value) .. ")")
   EasyCCDB.durationTime["Interrupt"] = mathfloor(tonumber(("%.0f"):format(value)))-- the real alpha value
 	SetCVar("lossOfControlInterrupt", mathfloor(tonumber(("%.0f"):format(value))))
+end)
+
+local LossOfControlSilence
+LossOfControlSilence = CreateSlider("LossOfControlSilence", OptionsPanel, 0, 2, 1, "LossOfControlSilence")
+LossOfControlSilence:SetScript("OnValueChanged", function(self, value)
+LossOfControlSilence:SetScale(1)
+LossOfControlSilence:SetWidth(175)
+	_G[self:GetName() .. "Text"]:SetText("DisplayType  Silence" .. " (" .. ("%.0f"):format(value) .. ")")
+  EasyCCDB.durationTime["Silence"] = mathfloor(tonumber(("%.0f"):format(value)))-- the real alpha value
+	SetCVar("lossOfControlSilence", mathfloor(tonumber(("%.0f"):format(value))))
 end)
 
 local LossOfControlDisarm
@@ -2561,15 +2629,6 @@ PriorityFull:SetWidth(200)
   EasyCCDB.priority["CC"] = mathfloor(tonumber(("%.0f"):format(value)))-- the real alpha value
 end)
 
-local PrioritySilence
-PrioritySilence = CreateSlider("PrioritySilence", OptionsPanel, 0, 100, 1, "PrioritySilence")
-PrioritySilence:SetScript("OnValueChanged", function(self, value)
-PrioritySilence:SetScale(1)
-PrioritySilence:SetWidth(200)
-	_G[self:GetName() .. "Text"]:SetText("Priority  Silence" .. " (" .. ("%.0f"):format(value) .. ")")
-  EasyCCDB.priority["Silence"] = mathfloor(tonumber(("%.0f"):format(value)))-- the real alpha value
-end)
-
 local PriorityInterrupt
 PriorityInterrupt = CreateSlider("PriorityInterrupt", OptionsPanel, 0, 100, 1, "PriorityInterrupt")
 PriorityInterrupt:SetScript("OnValueChanged", function(self, value)
@@ -2577,6 +2636,15 @@ PriorityInterrupt:SetScale(1)
 PriorityInterrupt:SetWidth(200)
 	_G[self:GetName() .. "Text"]:SetText("Priority  Interrupt" .. " (" .. ("%.0f"):format(value) .. ")")
   EasyCCDB.priority["Interrupt"] = mathfloor(tonumber(("%.0f"):format(value)))-- the real alpha value
+end)
+
+local PrioritySilence
+PrioritySilence = CreateSlider("PrioritySilence", OptionsPanel, 0, 100, 1, "PrioritySilence")
+PrioritySilence:SetScript("OnValueChanged", function(self, value)
+PrioritySilence:SetScale(1)
+PrioritySilence:SetWidth(200)
+	_G[self:GetName() .. "Text"]:SetText("Priority  Silence" .. " (" .. ("%.0f"):format(value) .. ")")
+  EasyCCDB.priority["Silence"] = mathfloor(tonumber(("%.0f"):format(value)))-- the real alpha value
 end)
 
 local PriorityDisarm
@@ -2642,8 +2710,8 @@ LossOfControl:SetScript("OnClick", function(self)
 	EasyCCDB.LossOfControl = self:GetChecked()
 	if (self:GetChecked()) then
 		SetCVar("LossOfControl", 1)
-		BlizzardOptionsPanel_Slider_Enable(LossOfControlInterrupt)
 		BlizzardOptionsPanel_Slider_Enable(LossOfControlFull)
+		BlizzardOptionsPanel_Slider_Enable(LossOfControlInterrupt)
 		BlizzardOptionsPanel_Slider_Enable(LossOfControlSilence)
 		BlizzardOptionsPanel_Slider_Enable(LossOfControlDisarm)
 		BlizzardOptionsPanel_Slider_Enable(LossOfControlRoot)
@@ -2662,8 +2730,8 @@ LossOfControl:SetScript("OnClick", function(self)
     BlizzardOptionsPanel_Slider_Enable(PrioritySnare)
 	else
 		SetCVar("LossOfControl", 0)
-		BlizzardOptionsPanel_Slider_Disable(LossOfControlInterrupt)
 		BlizzardOptionsPanel_Slider_Disable(LossOfControlFull)
+  	BlizzardOptionsPanel_Slider_Disable(LossOfControlInterrupt)
 		BlizzardOptionsPanel_Slider_Disable(LossOfControlSilence)
 		BlizzardOptionsPanel_Slider_Disable(LossOfControlDisarm)
 		BlizzardOptionsPanel_Slider_Disable(LossOfControlRoot)
@@ -2688,9 +2756,9 @@ if Scale then Scale:SetPoint("TOPLEFT", Unlock, "BOTTOMLEFT", 5, -30) end
 if LossOfControl then LossOfControl:SetPoint("TOPLEFT", Scale, "BOTTOMLEFT", 5, -15) end
 
 if PriorityFull then PriorityFull:SetPoint("TOPLEFT", LossOfControl, "BOTTOMLEFT", 0, -22.5) end
-if PrioritySilence then PrioritySilence:SetPoint("TOPLEFT", PriorityFull, "BOTTOMLEFT", 0, -25) end
-if PriorityInterrupt then PriorityInterrupt:SetPoint("TOPLEFT", PrioritySilence, "BOTTOMLEFT", 0, -25) end
-if PriorityDisarm then PriorityDisarm:SetPoint("TOPLEFT", PriorityInterrupt, "BOTTOMLEFT", 0, -25) end
+if PriorityInterrupt then PriorityInterrupt:SetPoint("TOPLEFT", PriorityFull, "BOTTOMLEFT", 0, -25) end
+if PrioritySilence then PrioritySilence:SetPoint("TOPLEFT", PriorityInterrupt, "BOTTOMLEFT", 0, -25) end
+if PriorityDisarm then PriorityDisarm:SetPoint("TOPLEFT", PrioritySilence, "BOTTOMLEFT", 0, -25) end
 if PriorityRoot then PriorityRoot:SetPoint("TOPLEFT", PriorityDisarm, "BOTTOMLEFT", 0, -25) end
 if PriorityImmune then PriorityImmune:SetPoint("TOPLEFT", PriorityRoot, "BOTTOMLEFT", 0, -25) end
 if PriorityOther then PriorityOther:SetPoint("TOPLEFT", PriorityImmune, "BOTTOMLEFT", 0, -25) end
@@ -2698,9 +2766,9 @@ if PriorityWarning then PriorityWarning:SetPoint("TOPLEFT", PriorityOther, "BOTT
 if PrioritySnare then PrioritySnare:SetPoint("TOPLEFT", PriorityWarning, "BOTTOMLEFT", 0, -25) end
 
 if LossOfControlFull then LossOfControlFull:SetPoint("TOPLEFT", LossOfControl, "BOTTOMLEFT", 250, -22.5) end
-if LossOfControlSilence then LossOfControlSilence:SetPoint("TOPLEFT", LossOfControlFull, "BOTTOMLEFT", 0, -25) end
-if LossOfControlInterrupt then LossOfControlInterrupt:SetPoint("TOPLEFT", LossOfControlSilence, "BOTTOMLEFT", 0, -25) end
-if LossOfControlDisarm then LossOfControlDisarm:SetPoint("TOPLEFT", LossOfControlInterrupt, "BOTTOMLEFT", 0, -25) end
+if LossOfControlInterrupt then LossOfControlInterrupt:SetPoint("TOPLEFT", LossOfControlFull, "BOTTOMLEFT", 0, -25) end
+if LossOfControlSilence then LossOfControlSilence:SetPoint("TOPLEFT", LossOfControlInterrupt, "BOTTOMLEFT", 0, -25) end
+if LossOfControlDisarm then LossOfControlDisarm:SetPoint("TOPLEFT", LossOfControlSilence, "BOTTOMLEFT", 0, -25) end
 if LossOfControlRoot then LossOfControlRoot:SetPoint("TOPLEFT", LossOfControlDisarm, "BOTTOMLEFT", 0, -25) end
 if LossOfControlImmune then LossOfControlImmune:SetPoint("TOPLEFT", LossOfControlRoot, "BOTTOMLEFT", 0, -25) end
 if LossOfControlOther then LossOfControlOther:SetPoint("TOPLEFT", LossOfControlImmune, "BOTTOMLEFT", 0, -25) end
@@ -2722,12 +2790,11 @@ LoCOptions:SetPoint("TOPLEFT", LossOfControlSnare, "TOPLEFT", 0, -25)
 -------------------------------------------------------------------------------
 OptionsPanel.default = function() -- This method will run when the player clicks "defaults"
   if not LossOfControl:GetChecked() then
-    BlizzardOptionsPanel_Slider_Enable(LossOfControlInterrupt)
     BlizzardOptionsPanel_Slider_Enable(LossOfControlFull)
+    BlizzardOptionsPanel_Slider_Enable(LossOfControlInterrupt)
     BlizzardOptionsPanel_Slider_Enable(LossOfControlSilence)
     BlizzardOptionsPanel_Slider_Enable(LossOfControlDisarm)
     BlizzardOptionsPanel_Slider_Enable(LossOfControlRoot)
-    BlizzardOptionsPanel_Slider_Enable(LossOfControlInterrupt)
     BlizzardOptionsPanel_Slider_Enable(LossOfControlFull)
     BlizzardOptionsPanel_Slider_Enable(LossOfControlSilence)
     BlizzardOptionsPanel_Slider_Enable(LossOfControlDisarm)
@@ -2738,10 +2805,10 @@ OptionsPanel.default = function() -- This method will run when the player clicks
     BlizzardOptionsPanel_Slider_Enable(LossOfControlSnare)
     BlizzardOptionsPanel_Slider_Enable(PriorityInterrupt)
     BlizzardOptionsPanel_Slider_Enable(PriorityFull)
+    BlizzardOptionsPanel_Slider_Enable(PriorityInterrupt)
     BlizzardOptionsPanel_Slider_Enable(PrioritySilence)
     BlizzardOptionsPanel_Slider_Enable(PriorityDisarm)
     BlizzardOptionsPanel_Slider_Enable(PriorityRoot)
-    BlizzardOptionsPanel_Slider_Enable(PriorityInterrupt)
     BlizzardOptionsPanel_Slider_Enable(PriorityFull)
     BlizzardOptionsPanel_Slider_Enable(PrioritySilence)
     BlizzardOptionsPanel_Slider_Enable(PriorityDisarm)
@@ -2765,8 +2832,8 @@ end
 OptionsPanel.refresh = function()
 	 -- This method will run when the Interface Options frame calls its OnShow function and after defaults have been applied via the panel.default method described above.
 	LossOfControl:SetChecked(EasyCCDB.LossOfControl)
-	LossOfControlInterrupt:SetValue(EasyCCDB.durationTime["Interrupt"])
 	LossOfControlFull:SetValue(EasyCCDB.durationTime["CC"])
+	LossOfControlInterrupt:SetValue(EasyCCDB.durationTime["Interrupt"])
 	LossOfControlSilence:SetValue(EasyCCDB.durationTime["Silence"])
 	LossOfControlDisarm:SetValue(EasyCCDB.durationTime["Disarm"])
 	LossOfControlRoot:SetValue(EasyCCDB.durationTime["Root"])
@@ -2775,8 +2842,8 @@ OptionsPanel.refresh = function()
   LossOfControlWarning:SetValue(EasyCCDB.durationTime["Warning"])
   LossOfControlSnare:SetValue(EasyCCDB.durationTime["Snare"])
 
-  PriorityInterrupt:SetValue(EasyCCDB.priority["Interrupt"])
   PriorityFull:SetValue(EasyCCDB.priority["CC"])
+  PriorityInterrupt:SetValue(EasyCCDB.priority["Interrupt"])
   PrioritySilence:SetValue(EasyCCDB.priority["Silence"])
   PriorityDisarm:SetValue(EasyCCDB.priority["Disarm"])
   PriorityRoot:SetValue(EasyCCDB.priority["Root"])
@@ -2786,6 +2853,7 @@ OptionsPanel.refresh = function()
   PrioritySnare:SetValue(EasyCCDB.priority["Snare"])
 
 	Scale:SetValue(EasyCCDB.Scale)
+  AnimateText:SetChecked(EasyCCDB.AnimateText)
 
   if EasyCC.test then Unlock:SetChecked(true) else Unlock:SetChecked(false) end
   if EasyCCDB.LossOfControl then SetCVar("lossOfControl", 1) else SetCVar("lossOfControl", 0) end
